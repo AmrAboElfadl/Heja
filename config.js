@@ -21,8 +21,8 @@ window.HEJA_CONFIG = {
   // Supabase (database for products + orders). Leave empty to use products.js only.
   // The anon/publishable key is safe to put here: the database only lets visitors
   // read products and place orders (see supabase/schema.sql).
-  supabaseUrl: "",
-  supabaseAnonKey: "",
+  supabaseUrl: "https://ayzewnvgvvhoioljxhvj.supabase.co",
+  supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5emV3bnZndnZob2lvbGp4aHZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ5MjQ5MzMsImV4cCI6MjExMDUwMDkzM30.W-CXqQoeD8S42NJlUxz7snUo65HE988XicmRDNRwku8",
 
   // AI shopping assistant (runs on Vercel at /api/chat using OpenRouter).
   assistant: true,
