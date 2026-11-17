@@ -1,0 +1,7 @@
+{
+  "name": "heja",
+  "private": true,
+  "type": "module",
+  "description": "Heja clothing store: static site + Vercel function + Supabase",
+  "engines": { "node": ">=20" }
+}

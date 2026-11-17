@@ -1,51 +1,72 @@
 # Heja — Clothing Store Website
 
-A fast, mobile-friendly clothing shop that is **100% free to run**:
-no server, no database, no monthly fees, no payment-gateway fees.
+A fast, mobile-friendly clothing shop built entirely on **free tiers**:
 
-Customers browse, pick sizes, add to cart, and send their order to you on
-**WhatsApp** (or email) with all their delivery details. They pay cash on delivery.
+| Service | What it does | Cost |
+|---|---|---|
+| **GitHub** | Stores the code; every push redeploys the site | Free |
+| **Vercel** | Hosts the website + the AI assistant function | Free (Hobby) |
+| **Supabase** | Database for products, orders and settings, plus photo storage | Free |
+| **OpenRouter** | AI style assistant (free models) | Free |
 
-## Make it yours (5 minutes)
+Customers browse, pick sizes, add to cart and check out. Each order is **saved in
+Supabase** (prices are recalculated on the server, so they can't be tampered with)
+and sent to you on **WhatsApp** (or email). Customers pay cash on delivery.
 
-1. **`config.js`**: set your WhatsApp number, email, currency, shipping fee and social links.
-2. **`products.js`**: add or edit your products (name, price, sizes, category, description).
-3. **Photos**: put product photos in `assets/` and set `image: "assets/your-photo.jpg"`.
-   Until then, each product shows a built-in illustration in its colour.
+## How it fits together
 
-## Preview on your computer
+```
+Browser ──► Vercel (index.html, app.js …)
+   │            └── /api/chat ──► OpenRouter (key stays on the server)
+   └──────────► Supabase: read products · place_order() · settings
+```
 
-Open `index.html` in your browser, or run:
+## Setup
+
+### 1. Supabase
+1. Create a project at supabase.com (free plan allows 2 active projects).
+2. SQL Editor → run `supabase/schema.sql`, then `supabase/seed.sql`.
+3. Project Settings → API: copy the **Project URL** and the **anon / publishable key**
+   into `config.js` (`supabaseUrl`, `supabaseAnonKey`). This key is safe to be public:
+   visitors can only read products and place orders.
+
+**Managing the shop** (no code needed, in Supabase → Table Editor):
+- `products`: add, edit or hide (`active` = false) products, and change prices.
+- `orders` / `order_items`: see every order and update `status` (new → confirmed → shipped → delivered).
+- `store_settings`: shipping fee and free-shipping threshold.
+- Photos: Storage → `product-images` → upload, copy the public URL into the product's `image`.
+
+### 2. OpenRouter
+1. Create a free account at openrouter.ai → Keys → create a key.
+2. Don't put it in any file. It goes into Vercel (next step).
+
+### 3. Vercel
+1. vercel.com → Add New Project → import the `heja` GitHub repo (no build settings needed).
+2. Settings → Environment Variables:
+   - `OPENROUTER_API_KEY`: your OpenRouter key (required for the assistant)
+   - `OPENROUTER_MODEL`: optional, defaults to `openrouter/free` (OpenRouter's free-models router)
+   - `SUPABASE_URL`, `SUPABASE_ANON_KEY`: optional, so the assistant knows the live catalog
+3. Redeploy. Your site is live at `https://heja-xxx.vercel.app`.
+
+### 4. Your details
+Edit `config.js`: WhatsApp number, email, currency and social links.
+
+## Preview locally
 
 ```bash
 python3 -m http.server 8000
 ```
 
-Then go to http://localhost:8000
-
-## Publish for free
-
-**Option A: Netlify Drop (easiest, no account setup)**
-1. Go to https://app.netlify.com/drop
-2. Drag the whole `heja` folder onto the page.
-3. You get a free link like `heja-shop.netlify.app`.
-
-**Option B: GitHub Pages**
-1. Create a free GitHub repository and upload these files.
-2. Settings → Pages → Source: `main` branch, root folder.
-3. Your site will be live at `https://<username>.github.io/<repo>/`.
-
-**Option C: Vercel or Cloudflare Pages.** Both are free and let you import the GitHub repo.
-
-A custom domain such as `heja.com` is the only thing that costs money (about $10/year),
-and it's optional.
+This works without Supabase (it falls back to `products.js`). The assistant only works on Vercel.
 
 ## Files
 
 | File | What it is |
 |---|---|
-| `index.html` | Page layout |
-| `styles.css` | Design (colours are at the top under `:root`) |
-| `app.js` | Shop logic: filters, search, cart, checkout |
-| `config.js` | Your store settings |
-| `products.js` | Your product catalog |
+| `index.html`, `styles.css` | Page layout and design (colours at the top of `styles.css`) |
+| `app.js` | Shop logic: catalog, filters, cart, checkout, assistant widget |
+| `config.js` | Store settings + Supabase connection |
+| `products.js` | Built-in catalog, used when Supabase isn't connected |
+| `api/chat.js` | Vercel function: AI assistant via OpenRouter |
+| `supabase/schema.sql` | Tables, security rules, `place_order` function, storage bucket |
+| `supabase/seed.sql` | Starter products |

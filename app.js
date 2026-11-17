@@ -1,6 +1,9 @@
 (() => {
   const CFG = window.HEJA_CONFIG;
-  const PRODUCTS = window.HEJA_PRODUCTS;
+  let PRODUCTS = window.HEJA_PRODUCTS;
+  const SB = CFG.supabaseUrl && CFG.supabaseAnonKey
+    ? { url: CFG.supabaseUrl.replace(/\/$/, ""), headers: { apikey: CFG.supabaseAnonKey, Authorization: `Bearer ${CFG.supabaseAnonKey}` } }
+    : null;
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
   const CART_KEY = "heja-cart";
@@ -53,8 +56,10 @@
   // ---------- static content ----------
   $("#tagline").textContent = CFG.tagline;
   $("#year").textContent = new Date().getFullYear();
-  const freeShipText = CFG.freeShippingOver > 0 ? `Free shipping on orders over ${money(CFG.freeShippingOver)}` : "Fast delivery to your door";
-  $("#announce").textContent = `${freeShipText} · Cash on delivery`;
+  function renderStatic() {
+    const freeShipText = CFG.freeShippingOver > 0 ? `Free shipping on orders over ${money(CFG.freeShippingOver)}` : "Fast delivery to your door";
+    $("#announce").textContent = `${freeShipText} · Cash on delivery`;
+  }
   $("#waContact").href = `https://wa.me/${CFG.whatsappNumber}`;
   $("#mailContact").href = `mailto:${CFG.orderEmail}`;
   $("#mailContact").textContent = CFG.orderEmail;
@@ -63,8 +68,10 @@
     .map(([name, url]) => `<a href="${esc(url)}" target="_blank" rel="noopener">${name[0].toUpperCase() + name.slice(1)}</a>`)
     .join("");
 
-  // Hero collage uses product illustrations
-  const heroPicks = ["summer-dress", "everyday-hoodie", "kids-tee"].map(byId).filter(Boolean);
+  // Hero collage uses product illustrations/photos
+  function renderHero() {
+  const preferred = ["summer-dress", "everyday-hoodie", "kids-tee"].map(byId).filter(Boolean);
+  const heroPicks = preferred.length === 3 ? preferred : PRODUCTS.slice(0, 3);
   $$(".hero-card").forEach((el, i) => {
     const p = heroPicks[i];
     if (!p) return;
@@ -72,15 +79,20 @@
     el.style.backgroundImage = p.image
       ? `url("${p.image}")`
       : `url("data:image/svg+xml,${encodeURIComponent(illustration(p).replace("<svg ", '<svg xmlns="http://www.w3.org/2000/svg" '))}")`;
-    if (p.image) el.style.backgroundSize = "cover";
+    el.style.backgroundSize = p.image ? "cover" : "";
   });
+  }
 
   // ---------- shop: filters, search, sort ----------
   const state = { filter: "All", query: "", sort: "featured" };
-  const categories = ["All", ...new Set(PRODUCTS.map((p) => p.category))];
-  $("#filters").innerHTML = categories
-    .map((c) => `<button class="chip" role="tab" data-cat="${esc(c)}">${esc(c)}</button>`)
-    .join("");
+  let categories = ["All"];
+  function renderFilters() {
+    categories = ["All", ...new Set(PRODUCTS.map((p) => p.category))];
+    if (!categories.includes(state.filter)) state.filter = "All";
+    $("#filters").innerHTML = categories
+      .map((c) => `<button class="chip" role="tab" data-cat="${esc(c)}">${esc(c)}</button>`)
+      .join("");
+  }
 
   function renderGrid() {
     const q = state.query.trim().toLowerCase();
@@ -203,7 +215,8 @@
   // ---------- cart ----------
   let cart = [];
   try { cart = JSON.parse(localStorage.getItem(CART_KEY)) || []; } catch { cart = []; }
-  cart = cart.filter((l) => byId(l.id));
+  const pruneCart = () => { cart = cart.filter((l) => byId(l.id) && byId(l.id).sizes.includes(l.size)); };
+  pruneCart();
   const save = () => { try { localStorage.setItem(CART_KEY, JSON.stringify(cart)); } catch {} };
 
   function addToCart(id, size, qty) {
@@ -264,28 +277,69 @@
     openOverlay($("#checkoutOverlay"));
   });
 
-  // ---------- checkout: send order via WhatsApp or email ----------
+  // ---------- checkout: save order in Supabase, then send via WhatsApp or email ----------
   let via = "whatsapp";
+  let placing = false;
   $$("#checkoutForm [data-via]").forEach((b) => b.addEventListener("click", () => (via = b.dataset.via)));
-  $("#checkoutForm").addEventListener("submit", (e) => {
-    e.preventDefault();
-    if (!cart.length) return;
-    const d = Object.fromEntries(new FormData(e.target));
-    const t = totals();
-    const orderNo = "HJ-" + Date.now().toString(36).toUpperCase().slice(-6);
-    const lines = cart.map((l) => {
-      const p = byId(l.id);
-      return `• ${p.name} | Size ${l.size} | x${l.qty} = ${money(p.price * l.qty)}`;
+
+  async function saveOrder(d) {
+    const r = await fetch(`${SB.url}/rest/v1/rpc/place_order`, {
+      method: "POST",
+      headers: { ...SB.headers, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        p_customer: { name: d.name, phone: d.phone, city: d.city, address: d.address, notes: d.notes || "" },
+        p_items: cart.map((l) => ({ id: l.id, size: l.size, qty: l.qty }))
+      })
     });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.message || "Could not place the order");
+    return data;
+  }
+
+  const setSubmitting = (form, on) => $$("button[type=submit]", form).forEach((b) => (b.disabled = on));
+
+  $("#checkoutForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!cart.length || placing) return;
+    placing = true;
+    const form = e.target;
+    const d = Object.fromEntries(new FormData(form));
+    // Open the WhatsApp tab right away so browsers don't block it as a popup.
+    const tab = via === "whatsapp" ? window.open("about:blank", "_blank") : null;
+    setSubmitting(form, true);
+
+    let order;
+    try {
+      if (SB) {
+        const saved = await saveOrder(d);
+        order = {
+          no: saved.order_no, subtotal: saved.subtotal, shipping: saved.shipping, total: saved.total,
+          lines: saved.items.map((i) => ({ name: i.name, size: i.size, qty: i.qty, amount: i.price * i.qty }))
+        };
+      } else {
+        const t = totals();
+        order = {
+          no: "HJ-" + Date.now().toString(36).toUpperCase().slice(-6), ...t,
+          lines: cart.map((l) => { const p = byId(l.id); return { name: p.name, size: l.size, qty: l.qty, amount: p.price * l.qty }; })
+        };
+      }
+    } catch (err) {
+      if (tab) tab.close();
+      toast(err.message);
+      placing = false;
+      setSubmitting(form, false);
+      return;
+    }
+
     const msg = [
       `New order from ${CFG.brand} website`,
-      `Order: ${orderNo}`,
+      `Order: ${order.no}`,
       "",
-      ...lines,
+      ...order.lines.map((l) => `• ${l.name} | Size ${l.size} | x${l.qty} = ${money(l.amount)}`),
       "",
-      `Subtotal: ${money(t.subtotal)}`,
-      `Shipping: ${t.shipping ? money(t.shipping) : "Free"}`,
-      `Total: ${money(t.total)} (cash on delivery)`,
+      `Subtotal: ${money(order.subtotal)}`,
+      `Shipping: ${Number(order.shipping) ? money(order.shipping) : "Free"}`,
+      `Total: ${money(order.total)} (cash on delivery)`,
       "",
       `Name: ${d.name}`,
       `Phone: ${d.phone}`,
@@ -294,16 +348,94 @@
       d.notes ? `Notes: ${d.notes}` : ""
     ].filter((x, i, a) => x !== "" || a[i - 1] !== "").join("\n");
 
-    const url = via === "email"
-      ? `mailto:${CFG.orderEmail}?subject=${encodeURIComponent(`${CFG.brand} order ${orderNo}`)}&body=${encodeURIComponent(msg)}`
-      : `https://wa.me/${CFG.whatsappNumber}?text=${encodeURIComponent(msg)}`;
-    window.open(url, "_blank");
+    if (via === "email") {
+      window.location.href = `mailto:${CFG.orderEmail}?subject=${encodeURIComponent(`${CFG.brand} order ${order.no}`)}&body=${encodeURIComponent(msg)}`;
+    } else {
+      const url = `https://wa.me/${CFG.whatsappNumber}?text=${encodeURIComponent(msg)}`;
+      if (tab) tab.location.href = url; else window.open(url, "_blank");
+    }
 
     cart = []; save(); renderCart();
-    e.target.reset();
+    form.reset();
+    placing = false;
+    setSubmitting(form, false);
     closeOverlay($("#checkoutOverlay"));
-    toast(`Thank you! Order ${orderNo} is ready to send.`);
+    toast(`Thank you! Order ${order.no} received.`);
   });
+
+  // ---------- AI style assistant (/api/chat → OpenRouter) ----------
+  const chat = { history: [], busy: false, greeted: false };
+  const addMsg = (who, text) => {
+    const el = document.createElement("div");
+    el.className = `msg ${who}`;
+    el.textContent = text;
+    $("#chatLog").appendChild(el);
+    $("#chatLog").scrollTop = $("#chatLog").scrollHeight;
+    return el;
+  };
+  if (CFG.assistant) $("#chatOpen").hidden = false;
+  $("#chatOpen").addEventListener("click", () => {
+    $("#chatPanel").hidden = false;
+    $("#chatOpen").hidden = true;
+    if (!chat.greeted) {
+      addMsg("bot", "Hi! I'm Heja's style assistant. Ask me about sizes, outfits or gift ideas. أهلاً! تقدر تسألني بالعربي كمان.");
+      chat.greeted = true;
+    }
+    $("#chatInput").focus();
+  });
+  $("#chatClose").addEventListener("click", () => { $("#chatPanel").hidden = true; $("#chatOpen").hidden = false; });
+  $("#chatForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const text = $("#chatInput").value.trim();
+    if (!text || chat.busy) return;
+    $("#chatInput").value = "";
+    addMsg("me", text);
+    chat.history.push({ role: "user", content: text });
+    chat.busy = true;
+    const typing = addMsg("bot typing", "Typing…");
+    let reply, ok = false;
+    try {
+      const r = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: chat.history.slice(-12), currency: CFG.currency })
+      });
+      const data = await r.json().catch(() => ({}));
+      ok = r.ok && !!data.reply;
+      reply = ok ? data.reply : data.error || "The assistant is offline right now. Please message us on WhatsApp.";
+    } catch {
+      reply = "The assistant is offline right now. Please message us on WhatsApp.";
+    }
+    typing.textContent = reply;
+    typing.className = "msg bot";
+    if (ok) chat.history.push({ role: "assistant", content: reply });
+    else chat.history.pop();
+    chat.busy = false;
+  });
+
+  // ---------- load live catalog + settings from Supabase ----------
+  async function loadRemote() {
+    if (!SB) return;
+    try {
+      const [pr, sr] = await Promise.all([
+        fetch(`${SB.url}/rest/v1/products?select=*&order=sort_order.asc,name.asc`, { headers: SB.headers }),
+        fetch(`${SB.url}/rest/v1/store_settings?select=shipping_fee,free_shipping_over&id=eq.1`, { headers: SB.headers })
+      ]);
+      if (!pr.ok) throw new Error("products " + pr.status);
+      const rows = await pr.json();
+      PRODUCTS = rows.map((p) => ({
+        id: p.id, name: p.name, category: p.category, price: Number(p.price), oldPrice: Number(p.old_price) || 0,
+        color: /^#[0-9a-f]{6}$/i.test(p.color) ? p.color : "#e9e4da", shape: p.shape, sizes: p.sizes || [],
+        badge: p.badge || "", image: p.image || "", description: p.description || ""
+      }));
+      if (sr.ok) {
+        const [st] = await sr.json();
+        if (st) { CFG.shippingFee = Number(st.shipping_fee); CFG.freeShippingOver = Number(st.free_shipping_over); }
+      }
+    } catch (err) {
+      console.warn("Using built-in catalog; Supabase unavailable:", err);
+    }
+  }
 
   // ---------- toast ----------
   let toastTimer;
@@ -315,6 +447,11 @@
     toastTimer = setTimeout(() => el.classList.remove("show"), 2400);
   }
 
-  renderGrid();
-  renderCart();
+  function renderAll() {
+    pruneCart(); save();
+    renderStatic(); renderHero(); renderFilters(); renderGrid(); renderCart();
+  }
+  if (SB) $("#grid").innerHTML = `<p class="empty">Loading products…</p>`;
+  else renderAll();
+  loadRemote().then(renderAll);
 })();

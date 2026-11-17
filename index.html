@@ -166,6 +166,23 @@
     </div>
   </div>
 
+  <!-- AI assistant -->
+  <button class="chat-fab" id="chatOpen" aria-label="Ask the Heja style assistant" hidden>
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v11H9l-5 4V5z"/></svg>
+    <span>Ask Heja</span>
+  </button>
+  <section class="chat" id="chatPanel" hidden aria-label="Heja style assistant">
+    <div class="chat-head">
+      <div><strong>Heja style assistant</strong><span class="small">Sizes, outfits, gift ideas</span></div>
+      <button class="close" id="chatClose" aria-label="Close assistant">×</button>
+    </div>
+    <div class="chat-log" id="chatLog" aria-live="polite"></div>
+    <form class="chat-form" id="chatForm">
+      <input id="chatInput" placeholder="Ask anything… / اسأل أي سؤال" autocomplete="off" maxlength="800" aria-label="Your question">
+      <button class="btn btn-primary" type="submit" aria-label="Send">Send</button>
+    </form>
+  </section>
+
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="config.js"></script>
