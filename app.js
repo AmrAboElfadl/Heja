@@ -73,7 +73,7 @@
     const detail = lum(p.color) < 110 ? shade(p.color, 50) : shade(p.color, -45);
     return `<svg viewBox="0 0 100 100" aria-hidden="true">${(SHAPES[p.shape] || SHAPES.tee)(p.color, detail)}</svg>`;
   };
-  const bgFor = (p) => { const l = lum(p.color); return l < 110 ? shade(p.color, 120) : l > 200 ? shade(p.color, -28) : shade(p.color, 38); };
+  const bgFor = () => "#EDE9E3"; // Greige studio backdrop for every product
   const media = (p) => (p.image ? `<img src="${esc(p.image)}" alt="${esc(pName(p))}" loading="lazy">` : illustration(p));
   const priceHtml = (p) => isSale(p) ? `<s>${money(p.oldPrice)}</s><span class="now-sale">${money(p.price)}</span>` : money(p.price);
   const heartSvg = `<svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>`;

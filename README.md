@@ -13,6 +13,24 @@ Customers browse, pick sizes, add to cart and check out. Each order is **saved i
 Supabase** (prices are recalculated on the server, so they can't be tampered with)
 and sent to you on **WhatsApp** (or email). Customers pay cash on delivery.
 
+## Brand identity
+
+Modelled on the design language of international luxury houses: neutral palette, serif headlines,
+tracked uppercase sans for navigation, square corners, centred wordmark.
+
+| Colour | Hex | Use |
+|---|---|---|
+| Noir | `#111111` | Text, buttons, announcement bar |
+| Ivory | `#F7F4EF` | Page background |
+| Blanc | `#FFFFFF` | Cards, windows, footer |
+| Stone | `#E6E0D6` | Hairline borders |
+| Greige | `#EDE9E3` | Product photo backdrop, newsletter |
+| Taupe | `#7A736B` | Secondary text |
+| Heja Clay | `#9A4A2C` | Signature accent, sparingly (sale prices) |
+
+Fonts (Google Fonts, free): **Cormorant Garamond** (headlines, HEJA wordmark), **Jost** (text, menus, buttons),
+**Amiri** + **IBM Plex Sans Arabic** for Arabic. Colours live at the top of `styles.css`.
+
 ## How it fits together
 
 ```
