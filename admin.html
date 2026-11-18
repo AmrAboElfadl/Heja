@@ -24,6 +24,15 @@
       <p class="msg" id="loginMsg" role="alert"></p>
       <p class="hint">Use the admin account created in Supabase → Authentication → Users.</p>
     </form>
+    <form class="login-card" id="pwForm" hidden>
+      <div class="logo">HEJA</div>
+      <h1>New password</h1>
+      <p class="hint" id="pwIntro"></p>
+      <label>New password<input type="password" id="pwNew" required minlength="10" autocomplete="new-password"></label>
+      <label>Repeat new password<input type="password" id="pwAgain" required minlength="10" autocomplete="new-password"></label>
+      <button class="btn" type="submit">Save password</button>
+      <p class="msg" id="pwMsg" role="alert"></p>
+    </form>
   </main>
 
   <!-- App -->

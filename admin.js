@@ -35,7 +35,8 @@
     });
     const d = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(d.error_description || d.msg || "Sign-in failed");
-    auth = { token: d.access_token, refresh: d.refresh_token, exp: Date.now() + (d.expires_in - 60) * 1000, email: d.user && d.user.email };
+    auth = { token: d.access_token, refresh: d.refresh_token, exp: Date.now() + (d.expires_in - 60) * 1000, email: d.user && d.user.email,
+      mustChange: !!(d.user && d.user.user_metadata && d.user.user_metadata.must_change_password) };
     store.set("heja-admin", auth);
   }
   async function refreshToken() {
@@ -46,6 +47,16 @@
     if (!r.ok) throw new Error("Session expired");
     auth = { ...auth, token: d.access_token, refresh: d.refresh_token, exp: Date.now() + (d.expires_in - 60) * 1000 };
     store.set("heja-admin", auth);
+  }
+  async function changePassword(pw) {
+    if (Date.now() > auth.exp) await refreshToken();
+    const r = await fetch(`${URL_}/auth/v1/user`, {
+      method: "PUT", headers: { apikey: KEY, Authorization: `Bearer ${auth.token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ password: pw, data: { must_change_password: false } })
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.msg || d.error_description || "Could not change the password");
+    auth.mustChange = false; store.set("heja-admin", auth);
   }
   function signOut() { store.del("heja-admin"); auth = null; location.reload(); }
 
@@ -348,7 +359,9 @@
           <p class="note">Sent to customers from an order's WhatsApp button. Put your bank details here. Saved only in this browser, never on the website. Placeholders: {name}, {order}, {total}.</p>
           <textarea name="tpl" rows="7">${esc(payTemplate())}</textarea>
           <button class="btn ghost" type="submit">Save message</button>
-        </form>`;
+        </form>
+        <div class="card" style="margin-top:20px"><h3>Your login</h3><p class="note">Signed in as ${esc(auth.email || "")}.</p>
+          <button class="btn ghost" type="button" id="changePw">Change password</button></div>`;
     }
   };
 
@@ -488,6 +501,7 @@
     if (d.notified) { await act(() => rest(`restock_requests?id=eq.${d.notified}`, { method: "PATCH", body: { notified: true } }), "Marked as notified"); return; }
     if (d.saveProduct) { await saveProduct(d.saveProduct); return; }
     if (d.addcolor) { await addColour(d.addcolor); return; }
+    if (t.id === "changePw") { showChangePassword(false); return; }
   });
   // Two-step confirm without browser dialogs
   function confirmInline(btn, text) {
@@ -572,6 +586,24 @@
     }, "Photo uploaded");
   }
 
+  // ---------- password change (forced after a one-time password, or from Settings) ----------
+  function showChangePassword(forced) {
+    $("#loginView").hidden = false; $("#appView").hidden = true;
+    $("#loginForm").hidden = true; $("#pwForm").hidden = false;
+    $("#pwIntro").textContent = forced ? "You signed in with a one-time password. Choose your own password to continue." : "Choose a new password.";
+    $("#pwNew").focus();
+  }
+  $("#pwForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const a = $("#pwNew").value, b = $("#pwAgain").value;
+    if (a.length < 10) return ($("#pwMsg").textContent = "Use at least 10 characters.");
+    if (a !== b) return ($("#pwMsg").textContent = "The two passwords don't match.");
+    const btn = $("button", e.target); btn.disabled = true;
+    try { await changePassword(a); $("#pwForm").hidden = true; $("#loginForm").hidden = false; e.target.reset(); toast("Password changed"); await start(); }
+    catch (err) { $("#pwMsg").textContent = err.message; }
+    finally { btn.disabled = false; }
+  });
+
   // ---------- start ----------
   $("#loginForm").addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -584,6 +616,7 @@
     const me = await rest("admins?select=email").catch(() => []);
     if (!me.length) { store.del("heja-admin"); auth = null; $("#loginView").hidden = false; $("#appView").hidden = true;
       $("#loginMsg").textContent = "This account is not a Heja admin. Ask to have your email added to the admins list."; return; }
+    if (auth.mustChange) { showChangePassword(true); return; }
     $("#loginView").hidden = true; $("#appView").hidden = false;
     $("#whoami").textContent = auth.email || "";
     await reload();
