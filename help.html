@@ -14,7 +14,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&family=Markazi+Text:wght@500;600;700&family=Vazirmatn:wght@300;400;500;600;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&family=Markazi+Text:wght@500;600;700&family=Vazirmatn:wght@300;400;500;600&family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <style>
     .help { padding: 48px 0 80px; }
@@ -28,7 +28,8 @@
     .help p, .help li { color: #3d443f; max-width: 70ch; }
     .help .updated { color: var(--muted); font-size: .85rem; }
     [data-lang] { display: none; }
-    html[lang="en"] [data-lang="en"], html[lang="ar"] [data-lang="ar"] { display: block; }
+    html[lang="en"] [data-lang="en"], html[lang="ar"] [data-lang="ar"], html[lang="fa"] [data-lang="fa"] { display: block; }
+    html[lang="fa"] .help h1 { font-family: "Noto Nastaliq Urdu", "Markazi Text", serif; line-height: 1.9; }
     @media (max-width: 760px) { .help-wrap { grid-template-columns: 1fr; } .toc { position: static; flex-direction: row; flex-wrap: wrap; gap: 8px 16px; } .help section { padding: 22px; } }
   </style>
 </head>
@@ -37,7 +38,7 @@
     <div class="container header-inner">
       <a href="./" class="logo" aria-label="Heja home">heja<span>.</span></a>
       <div class="header-actions">
-        <button class="lang-btn" id="langBtn" style="display:inline-block">العربية</button>
+        <select class="lang-select" id="langSel" aria-label="Language"><option value="en">English</option><option value="ar">العربية</option><option value="fa">فارسی</option></select>
         <a href="./" class="btn btn-primary" style="padding:.55em 1.2em" id="backBtn">Back to shop</a>
       </div>
     </div>
@@ -195,6 +196,82 @@
         </section>
       </div>
     </div>
+
+    <!-- ================= PERSIAN ================= -->
+    <div class="container help-wrap" data-lang="fa">
+      <nav class="toc" aria-label="موضوعات راهنما">
+        <a href="#shipping">ارسال و تحویل</a><a href="#returns">مرجوعی و تعویض</a><a href="#payment">پرداخت</a>
+        <a href="#faq">پرسش‌های متداول</a><a href="#privacy">حریم خصوصی</a><a href="#terms">شرایط فروش</a><a href="#contact">تماس با ما</a>
+      </nav>
+      <div>
+        <h1>مرکز راهنما</h1>
+        <section id="shipping-fa">
+          <h2>ارسال و تحویل</h2>
+          <p>به همه‌ی استان‌های مصر ارسال می‌کنیم. سفارش شما در واتس‌اپ تأیید و سپس به شرکت حمل سپرده می‌شود.</p>
+          <ul>
+            <li><strong>قاهره و جیزه:</strong> ۲ تا ۳ روز کاری.</li>
+            <li><strong>سایر استان‌ها:</strong> ۳ تا ۵ روز کاری.</li>
+            <li><strong>هزینه‌ی ارسال:</strong> پیش از ثبت سفارش در سبد خرید نمایش داده می‌شود و برای سفارش‌های بالاتر از مبلغ اعلام‌شده در بالای سایت رایگان است.</li>
+          </ul>
+          <p>با <a href="./#track">پیگیری سفارش</a> و شماره‌ی سفارش و تلفن، هر زمان وضعیت سفارش را ببینید.</p>
+        </section>
+        <section id="returns-fa">
+          <h2>مرجوعی و تعویض</h2>
+          <ul>
+            <li><strong>تعویض رایگان تا ۱۴ روز</strong> پس از تحویل برای سایز یا رنگ دیگر.</li>
+            <li>مرجوعی تا ۱۴ روز برای کالای پوشیده‌نشده با برچسب. پس از دریافت کالا، مبلغ آن بازگردانده می‌شود.</li>
+            <li>لباس زیر، مایو و کالاهای «فروش نهایی» به دلایل بهداشتی مرجوع نمی‌شوند، مگر معیوب باشند.</li>
+            <li>کالای معیوب یا اشتباه دریافت کرده‌اید؟ ظرف ۴۸ ساعت با عکس به ما پیام دهید تا بدون هزینه عوضش کنیم.</li>
+          </ul>
+          <p>برای تعویض یا مرجوعی از فرم زیر استفاده کنید یا با شماره‌ی سفارش در واتس‌اپ پیام دهید.</p>
+          <p><a class="btn btn-primary" href="./#return">درخواست مرجوعی</a></p>
+        </section>
+        <section id="payment-fa">
+          <h2>پرداخت</h2>
+          <p>پرداخت <strong>نقدی هنگام تحویل</strong> و به پوند مصر انجام می‌شود. قیمت‌ها به ارزهای دیگر فقط برای راهنمایی و تقریبی است. کد تخفیف در سبد خرید اعمال و پیش از تأیید نمایش داده می‌شود.</p>
+        </section>
+        <section id="faq-fa">
+          <h2>پرسش‌های متداول</h2>
+          <h3>سایزم را چطور انتخاب کنم؟</h3>
+          <p>روی هر محصول «سایز من چیست؟» یا «راهنمای سایز» را بزنید. بین دو سایز هستید؟ بزرگ‌تر را بردارید یا در واتس‌اپ بپرسید.</p>
+          <h3>می‌توانم سفارشم را تغییر دهم یا لغو کنم؟</h3>
+          <p>بله، تا پیش از ارسال. با شماره‌ی سفارش در واتس‌اپ پیام دهید.</p>
+          <h3>حساب کاربری لازم است؟</h3>
+          <p>خیر. کالا را به سبد اضافه کنید و اطلاعات تحویل را وارد کنید. علاقه‌مندی‌ها روی دستگاه خودتان ذخیره می‌شوند.</p>
+          <h3>کد تخفیف را چطور استفاده کنم؟</h3>
+          <p>سبد خرید را باز کنید، کد را در کادر «کد تخفیف» بنویسید و «اعمال» را بزنید. اعضای جدید خبرنامه با کد WELCOME10 ده درصد تخفیف می‌گیرند.</p>
+          <h3>می‌توانم پیش از پرداخت کالا را ببینم؟</h3>
+          <p>بله. هنگام تحویل و پس از دیدن سفارش به پیک پرداخت می‌کنید.</p>
+        </section>
+        <section id="privacy-fa">
+          <h2>حریم خصوصی</h2>
+          <p class="updated">آخرین به‌روزرسانی: نوامبر ۲۰۲۶</p>
+          <p>فقط اطلاعات لازم برای تحویل سفارش را می‌گیریم: نام، شماره تلفن، شهر، نشانی و توضیحات شما. اگر عضو خبرنامه شوید، ایمیلتان را هم نگه می‌داریم.</p>
+          <ul>
+            <li>این اطلاعات فقط برای پردازش و تحویل سفارش، پاسخ به پرسش‌ها و (در صورت عضویت) ارسال پیشنهادها به کار می‌رود.</li>
+            <li>اطلاعات شما را هرگز نمی‌فروشیم و نشانی تحویل را فقط با شرکت حمل به اشتراک می‌گذاریم.</li>
+            <li>سبد خرید، علاقه‌مندی‌ها و محصولات دیده‌شده روی دستگاه خودتان ذخیره می‌شوند.</li>
+            <li>هر زمان بخواهید می‌توانید دیدن، اصلاح یا حذف اطلاعاتتان را از ما بخواهید.</li>
+          </ul>
+        </section>
+        <section id="terms-fa">
+          <h2>شرایط فروش</h2>
+          <ul>
+            <li>قیمت‌ها به پوند مصر و در صورت شمول با مالیات است. مبلغی که پرداخت می‌کنید همان مبلغ تأییدشده هنگام سفارش است. نمایش به ارزهای دیگر تقریبی است.</li>
+            <li>سفارش پس از تماس ما در واتس‌اپ یا تلفن تأیید می‌شود. اگر کالا ناموجود باشد یا اطلاعات تأیید نشود، ممکن است سفارش لغو شود.</li>
+            <li>رنگ‌ها ممکن است در صفحه‌نمایش‌های مختلف کمی متفاوت دیده شوند.</li>
+            <li>کدهای تخفیف قابل جمع نیستند، ارزش نقدی ندارند و ممکن است منقضی شوند.</li>
+            <li>مرجوعی و تعویض طبق سیاست بالا انجام می‌شود.</li>
+          </ul>
+        </section>
+        <section id="contact-fa">
+          <h2>تماس با ما</h2>
+          <p>معمولاً ظرف چند ساعت پاسخ می‌دهیم، هر روز از ۱۰ صبح تا ۱۰ شب.</p>
+          <p><a class="btn btn-primary" data-wa target="_blank" rel="noopener">گفتگو در واتس‌اپ</a></p>
+          <p>ایمیل: <a data-mail></a></p>
+        </section>
+      </div>
+    </div>
   </main>
 
   <footer class="footer"><div class="container footer-bottom" style="border:0;margin:0;padding:0"><p class="small">© <span id="year"></span> Heja</p></div></footer>
@@ -202,23 +279,29 @@
   <script src="config.js"></script>
   <script>
     (function () {
-      var CFG = window.HEJA_CONFIG, lang = "en";
-      try { lang = JSON.parse(localStorage.getItem("heja-lang")) || ((navigator.language || "").toLowerCase().indexOf("ar") === 0 ? "ar" : "en"); } catch (e) {}
+      var CFG = window.HEJA_CONFIG, LANGS = ["en", "ar", "fa"], lang = "en";
+      try {
+        var saved = JSON.parse(localStorage.getItem("heja-lang")), nav = (navigator.language || "").toLowerCase().slice(0, 2);
+        lang = LANGS.indexOf(saved) >= 0 ? saved : (LANGS.indexOf(nav) >= 0 ? nav : "en");
+      } catch (e) {}
       var map = { shipping: 1, returns: 1, payment: 1, faq: 1, privacy: 1, terms: 1, contact: 1 };
+      var back = { en: "Back to shop", ar: "ارجع للمتجر", fa: "بازگشت به فروشگاه" };
+      // Translated sections use "-ar" / "-fa" ids; #shipping etc. links work in every language
+      ["ar", "fa"].forEach(function (l) {
+        document.querySelectorAll('[data-lang="' + l + '"] .toc a').forEach(function (a) {
+          a.href = "#" + a.getAttribute("href").slice(1).replace(/-(ar|fa)$/, "") + "-" + l;
+        });
+      });
       function apply() {
         document.documentElement.lang = lang;
-        document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
-        document.getElementById("langBtn").textContent = lang === "ar" ? "English" : "العربية";
-        document.getElementById("backBtn").textContent = lang === "ar" ? "ارجع للمتجر" : "Back to shop";
-        // Arabic sections use "-ar" ids; keep #shipping etc. links working in both languages
-        document.querySelectorAll('[data-lang="ar"] .toc a').forEach(function (a) {
-          var id = a.getAttribute("href").slice(1); a.href = "#" + id + "-ar";
-        });
-        var h = location.hash.replace("#", "").replace("-ar", "");
-        if (map[h]) { var el = document.getElementById(lang === "ar" ? h + "-ar" : h); if (el) el.scrollIntoView(); }
+        document.documentElement.dir = lang === "en" ? "ltr" : "rtl";
+        document.getElementById("langSel").value = lang;
+        document.getElementById("backBtn").textContent = back[lang];
+        var h = location.hash.replace("#", "").replace(/-(ar|fa)$/, "");
+        if (map[h]) { var el = document.getElementById(lang === "en" ? h : h + "-" + lang); if (el) el.scrollIntoView(); }
       }
-      document.getElementById("langBtn").onclick = function () {
-        lang = lang === "ar" ? "en" : "ar";
+      document.getElementById("langSel").onchange = function () {
+        lang = LANGS.indexOf(this.value) >= 0 ? this.value : "en";
         try { localStorage.setItem("heja-lang", JSON.stringify(lang)); } catch (e) {}
         apply();
       };

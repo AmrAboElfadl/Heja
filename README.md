@@ -86,6 +86,14 @@ Edit `config.js`: WhatsApp number, email, currency and social links.
 your own muted .mp4 (landscape, 10–20 seconds, under ~8 MB). Set `heroVideo: ""` in `config.js` to turn it off.
 Free fashion clips you're allowed to use: pexels.com/videos and pixabay.com/videos.
 
+**Languages:** English, Arabic and Persian (فارسی). Website text lives in `i18n.js` and `i18n-fa.js`;
+product text in Supabase (`name_ar` / `name_fa`, `description_*`, `fabric_*`, `care_*`, and `color_ar` / `color_fa`
+in `product_variants`). Persian uses Vazirmatn, Markazi Text and Noto Nastaliq Urdu (calligraphy headline).
+
+**Currencies:** shoppers can view prices in EGP, AED, USD, EUR or Iranian toman. Orders are always placed and paid
+in EGP; other currencies are shown as approximate. AED/USD/EUR update daily through `api/rates.js`; set the toman
+rate yourself in `config.js` → `currencies.IRT.perEgp` (display only, no Iranian payments).
+
 **Size chart:** edit `size-chart.js` (body measurements in cm; inches are calculated automatically).
 
 ## Preview locally

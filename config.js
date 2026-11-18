@@ -6,6 +6,19 @@ window.HEJA_CONFIG = {
   tagline: "Everyday clothes, made to move with you.",
   currency: "EGP",              // e.g. "EGP", "USD", "EUR", "SAR"
   currencyAr: "ج.م",            // currency shown when the site is in Arabic
+
+  // Display currencies. Orders are always placed and paid in EGP; other currencies are
+  // approximate. AED, USD and EUR update daily from /api/rates; these are fallbacks.
+  // perEgp = how much of that currency 1 EGP buys.
+  currencies: {
+    EGP: { perEgp: 1 },
+    AED: { perEgp: 0.0765 },
+    USD: { perEgp: 0.0208 },
+    EUR: { perEgp: 0.0179 },
+    // Iranian toman: display only (no Iranian payments). Official and market rates differ
+    // a lot, so this is set by you and never updated automatically. Example value: update it.
+    IRT: { perEgp: 2000 }
+  },
   currencyPosition: "after",   // "before" → $25   |  "after" → 25 EGP
 
   // Orders are sent here — no payment fees, no backend.

@@ -18,39 +18,98 @@
   };
 
   // ---------- language ----------
-  let lang = store.get("heja-lang", null) || ((navigator.language || "").toLowerCase().startsWith("ar") ? "ar" : "en");
+  const LANGS = ["en", "ar", "fa"];
+  const browserLang = (navigator.language || "").toLowerCase().slice(0, 2);
+  let lang = store.get("heja-lang", null);
+  if (!LANGS.includes(lang)) lang = LANGS.includes(browserLang) ? browserLang : "en";
+  const isRtl = () => lang === "ar" || lang === "fa";
+  const numLocale = () => (lang === "fa" ? "fa-IR" : "en-US");
+  const fmtNum = (n, digits = 0) => Number(n).toLocaleString(numLocale(), { maximumFractionDigits: digits });
   const t = (key, vars = {}) => {
     const s = (I18N[lang] && I18N[lang][key]) ?? I18N.en[key] ?? key;
-    return s.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? "");
+    return s.replace(/\{(\w+)\}/g, (_, k) => (typeof vars[k] === "number" ? fmtNum(vars[k]) : vars[k] ?? ""));
   };
-  const pName = (p) => (lang === "ar" && p.nameAr) || p.name;
-  const pDesc = (p) => (lang === "ar" && p.descriptionAr) || p.description;
+  // Localised product text: nameAr / nameFa, falling back to English
+  const loc = (o, field) => {
+    const k = field + (lang === "ar" ? "Ar" : lang === "fa" ? "Fa" : "");
+    return (lang !== "en" && o[k]) || o[field] || "";
+  };
+  const pName = (p) => loc(p, "name");
+  const pDesc = (p) => loc(p, "description");
   const catName = (c) => (I18N[lang][`cat.${c}`] ?? c);
   const badgeName = (b) => (I18N[lang][`badge.${b}`] ?? b);
 
   function applyLang() {
     document.documentElement.lang = lang;
-    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+    document.documentElement.dir = isRtl() ? "rtl" : "ltr";
+    $$("[data-lang-select]").forEach((el) => { el.value = lang; });
+    $$("[data-cur-select]").forEach((el) => { el.value = cur; });
     $$("[data-i18n]").forEach((el) => { el.textContent = t(el.dataset.i18n); });
     $$("[data-i18n-ph]").forEach((el) => { el.placeholder = t(el.dataset.i18nPh); });
     $$("[data-i18n-aria]").forEach((el) => { el.setAttribute("aria-label", t(el.dataset.i18nAria)); });
   }
-  $$("[data-lang-toggle]").forEach((b) =>
-    b.addEventListener("click", () => {
-      lang = lang === "ar" ? "en" : "ar";
-      store.set("heja-lang", lang);
-      renderAll();
-      if (!$("#productOverlay").hidden && pm.id) openProduct(pm.id, { keepFocus: true });
-      if (!$("#sizesOverlay").hidden) renderSizeGuide();
+  function rerenderOpen() {
+    renderAll();
+    if (!$("#productOverlay").hidden && pm.id) openProduct(pm.id, { keepFocus: true });
+    if (!$("#sizesOverlay").hidden) renderSizeGuide();
+  }
+  $$("[data-lang-select]").forEach((el) =>
+    el.addEventListener("change", () => {
+      if (!LANGS.includes(el.value)) return;
+      lang = el.value; store.set("heja-lang", lang);
+      rerenderOpen();
+    })
+  );
+  $$("[data-cur-select]").forEach((el) =>
+    el.addEventListener("change", () => {
+      if (!CFG.currencies || !CFG.currencies[el.value]) return;
+      cur = el.value; store.set("heja-cur", cur);
+      rerenderOpen();
     })
   );
 
   // ---------- helpers ----------
-  const money = (n) => {
-    const v = Number(n).toLocaleString("en-US", { maximumFractionDigits: 2 });
-    const cur = lang === "ar" ? (CFG.currencyAr || "ج.م") : CFG.currency;
-    return CFG.currencyPosition === "before" ? `${cur} ${v}` : `${v} ${cur}`;
+  // ---------- currencies (prices are stored in EGP) ----------
+  const CURS = CFG.currencies || { EGP: { perEgp: 1 } };
+  let cur = store.get("heja-cur", "EGP");
+  if (!CURS[cur]) cur = "EGP";
+  const LABELS = {
+    EGP: { en: "EGP", ar: "ج.م", fa: "پوند مصر" },
+    AED: { en: "AED", ar: "د.إ", fa: "درهم" },
+    USD: { en: "$", ar: "$", fa: "دلار" },
+    EUR: { en: "€", ar: "€", fa: "یورو" },
+    IRT: { en: "Toman", ar: "تومان", fa: "تومان" }
   };
+  const curName = (code) => ({ EGP: "EGP", AED: "AED", USD: "USD", EUR: "EUR", IRT: lang === "en" ? "Toman" : "تومان" })[code] || code;
+  const fmtMoney = (amount, code) => {
+    const lab = (LABELS[code] || {})[lang] || code;
+    const v = fmtNum(amount, 0);
+    if (lang === "en" && (code === "USD" || code === "EUR")) return `${lab}${v}`;
+    if (lang === "en" && code === "AED") return `${lab} ${v}`;
+    return `${v} ${lab}`;
+  };
+  // money(n): price in the shopper's currency. egp(n): the amount actually paid.
+  const money = (n) => fmtMoney(Number(n) * (CURS[cur] ? CURS[cur].perEgp : 1), CURS[cur] ? cur : "EGP");
+  const egp = (n) => fmtMoney(Number(n), "EGP");
+  async function loadRates() {
+    const KEY = "heja-rates";
+    const cached = store.get(KEY, null);
+    const apply = (rates) => Object.entries(rates || {}).forEach(([c, v]) => {
+      if (CURS[c] && c !== "IRT" && c !== "EGP" && Number(v) > 0) CURS[c].perEgp = Number(v);
+    });
+    if (cached && Date.now() - cached.at < 6 * 3600 * 1000) { apply(cached.rates); return false; }
+    try {
+      const r = await fetch("/api/rates");
+      if (!r.ok) throw new Error("rates " + r.status);
+      const d = await r.json();
+      apply(d.rates);
+      store.set(KEY, { at: Date.now(), rates: d.rates });
+      return true;
+    } catch {
+      if (cached) apply(cached.rates); // older rates are better than none
+      return false;
+    }
+  }
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const byId = (id) => PRODUCTS.find((p) => p.id === id);
   const isSale = (p) => p.oldPrice > p.price;
@@ -59,7 +118,7 @@
   // ---------- colours and stock ----------
   const LOW_STOCK = 3;
   const hasColors = (p) => p.colors && p.colors.length > 0;
-  const colorName = (c) => (c ? (lang === "ar" && c.nameAr) || c.name : "");
+  const colorName = (c) => (c ? loc(c, "name") : "");
   const findColor = (p, name) => (hasColors(p) ? p.colors.find((c) => c.name === name) : null);
   // A colour without stock numbers (built-in catalogue) counts as available.
   const stockOf = (p, color, size) => {
@@ -190,7 +249,7 @@
     r.value = Number.isFinite(state.maxPrice) ? state.maxPrice : max;
   }
 
-  const searchText = (p) => `${p.name} ${p.nameAr} ${p.category} ${catName(p.category)} ${p.description} ${p.descriptionAr} ${(p.colors || []).map((c) => c.name + " " + c.nameAr).join(" ")}`.toLowerCase();
+  const searchText = (p) => `${p.name} ${p.nameAr} ${p.nameFa || ""} ${p.category} ${catName(p.category)} ${p.description} ${p.descriptionAr} ${p.descriptionFa || ""} ${(p.colors || []).map((c) => `${c.name} ${c.nameAr} ${c.nameFa || ""}`).join(" ")}`.toLowerCase();
   function filtered() {
     const q = state.query.trim().toLowerCase();
     let list = PRODUCTS.filter((p) =>
@@ -501,8 +560,8 @@
 
   // Fabric & care, fit
   function renderDetails(p) {
-    const fabric = (lang === "ar" && p.fabricAr) || p.fabric;
-    const care = (lang === "ar" && p.careAr) || p.care;
+    const fabric = loc(p, "fabric");
+    const care = loc(p, "care");
     $("#pmDetails").hidden = !(fabric || care || p.fit);
     $("#pmFitLine").textContent = p.fit ? t("pm.fitLine", { fit: t(`fit.${p.fit}`) }) : "";
     $("#pmFabricText").textContent = fabric;
@@ -818,7 +877,9 @@
     $("#promoForm").hidden = !!promo;
     $("#promoApplied").hidden = !promo;
     $("#promoText").textContent = promo ? t("promo.ok", { code: promo.code }) : "";
-    $("#coTotal").textContent = t("co.total", { amount: money(t0.total) });
+    const approx = cur !== "EGP";
+    $("#coTotal").textContent = approx ? t("cur.pay", { amount: egp(t0.total) }) : t("co.total", { amount: money(t0.total) });
+    ["#curNote", "#coCurNote"].forEach((id) => { $(id).hidden = !approx; $(id).textContent = approx ? t("cur.note", { cur: curName(cur) }) : ""; });
   }
 
   $("#cartItems").addEventListener("click", (e) => {
@@ -968,7 +1029,7 @@
       if (!r.found) { out.innerHTML = `<p>${esc(t("track.notFound"))}</p>`; return; }
       const flow = ["new", "confirmed", "shipped", "delivered"];
       const idx = flow.indexOf(r.status);
-      const date = new Date(r.created_at).toLocaleDateString(lang === "ar" ? "ar-EG" : "en-GB", { day: "numeric", month: "long", year: "numeric" });
+      const date = new Date(r.created_at).toLocaleDateString(lang === "fa" ? "fa-IR" : lang === "ar" ? "ar-EG" : "en-GB", { day: "numeric", month: "long", year: "numeric" });
       out.innerHTML = `<div class="track-card">
         <h4>${esc(r.order_no)}</h4>
         <p class="small">${esc(t("track.placed", { date, city: r.city }))}</p>
@@ -1080,13 +1141,14 @@
       variants.forEach((v) => {
         const list = (colorsByProduct[v.product_id] = colorsByProduct[v.product_id] || []);
         let c = list.find((x) => x.name === v.color);
-        if (!c) { c = { name: v.color, nameAr: v.color_ar || "", hex: v.hex, stock: {} }; list.push(c); }
+        if (!c) { c = { name: v.color, nameAr: v.color_ar || "", nameFa: v.color_fa || "", hex: v.hex, stock: {} }; list.push(c); }
         c.stock[v.size] = Number(v.stock) || 0;
       });
       PRODUCTS = rows.map((p, i) => withDefaults({
-        id: p.id, name: p.name, nameAr: p.name_ar || "", category: p.category, price: Number(p.price), oldPrice: Number(p.old_price) || 0,
+        id: p.id, name: p.name, nameAr: p.name_ar || "", nameFa: p.name_fa || "", category: p.category, price: Number(p.price), oldPrice: Number(p.old_price) || 0,
         color: /^#[0-9a-f]{6}$/i.test(p.color) ? p.color : "#e9e4da", shape: p.shape, sizes: p.sizes || [],
         badge: p.badge || "", image: p.image || "", description: p.description || "", descriptionAr: p.description_ar || "",
+        descriptionFa: p.description_fa || "", fabricFa: p.fabric_fa || "", careFa: p.care_fa || "",
         colors: colorsByProduct[p.id] || [], fabric: p.fabric || "", fabricAr: p.fabric_ar || "", care: p.care || "", careAr: p.care_ar || "",
         fit: p.fit || "", order: Date.parse(p.created_at) || i
       }, i));
@@ -1114,10 +1176,11 @@
 
   function renderAll() {
     if (pruneCart()) { save(); toast(t("stock.changed")); }
-    applyLang(); renderAnnounce(); renderHero(); renderFilters(); renderGrid(); renderCart(); renderFavCount(); renderRecent();
+    applyLang(); $("#year").textContent = fmtNum(new Date().getFullYear()).replace(/[,٬]/g, ""); renderAnnounce(); renderHero(); renderFilters(); renderGrid(); renderCart(); renderFavCount(); renderRecent();
   }
   // Show the built-in catalog instantly, then refresh from the database.
   renderAll();
   setupVideo();
+  loadRates().then((changed) => { if (changed && cur !== "EGP") renderAll(); });
   loadRemote().then(() => { renderAll(); refreshPromo(); openFromHash(); });
 })();
