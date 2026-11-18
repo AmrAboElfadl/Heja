@@ -95,7 +95,7 @@
   }
 
   function renderHero() {
-    const preferred = ["summer-dress", "everyday-hoodie", "kids-tee"].map(byId).filter(Boolean);
+    const preferred = ["summer-dress", "everyday-hoodie", "pleated-skirt"].map(byId).filter(Boolean);
     const picks = preferred.length === 3 ? preferred : PRODUCTS.slice(0, 3);
     $$(".hero-card").forEach((el, i) => {
       const p = picks[i];
@@ -127,7 +127,9 @@
   const maxPriceAll = () => Math.ceil(Math.max(0, ...PRODUCTS.map((p) => p.price)) / 50) * 50;
 
   function renderFilters() {
-    const cats = [...new Set(PRODUCTS.map((p) => p.category))];
+    const CAT_ORDER = ["Women", "Unisex", "Accessories", "Men", "Kids"];
+    const rank = (c) => (CAT_ORDER.indexOf(c) + 1) || 99;
+    const cats = [...new Set(PRODUCTS.map((p) => p.category))].sort((a, b) => rank(a) - rank(b));
     if (state.cat !== "All" && !cats.includes(state.cat)) state.cat = "All";
     const chip = (attr, val, label, extra = "") =>
       `<button class="chip ${extra}" ${attr}="${esc(val)}">${esc(label)}</button>`;
@@ -138,7 +140,9 @@
       chip("data-tag", "sale", t("filter.sale"), "sale") +
       chip("data-tag", "favs", t("filter.favs"));
 
-    const sizes = [...new Set(PRODUCTS.flatMap((p) => p.sizes))];
+    const SIZE_ORDER = ["XXS", "XS", "S", "M", "L", "XL", "XXL", "2Y", "4Y", "6Y", "8Y", "One size"];
+    const srank = (s) => (SIZE_ORDER.indexOf(s) + 1) || 99;
+    const sizes = [...new Set(PRODUCTS.flatMap((p) => p.sizes))].sort((a, b) => srank(a) - srank(b));
     $("#sizeFilter").innerHTML = `<option value="">${esc(t("filter.anySize"))}</option>` +
       sizes.map((s) => `<option value="${esc(s)}">${esc(s)}</option>`).join("");
     $("#sizeFilter").value = state.size;
@@ -377,7 +381,7 @@
   const range = ([a, b]) => (sg.unit === "in" ? `${(a / 2.54).toFixed(1)}–${(b / 2.54).toFixed(1)}` : `${a}–${b}`);
 
   function renderSizeGuide() {
-    const tabs = [["women", "sg.women"], ["men", "sg.men"], ["kids", "sg.kids"], ["accessories", "sg.acc"]].filter(([k]) => SIZES[k]);
+    const tabs = [["women", "sg.women"], ["men", "cat.Unisex"], ["accessories", "sg.acc"]].filter(([k]) => SIZES[k]);
     $("#sgTabs").innerHTML = tabs.map(([k, l]) =>
       `<button type="button" role="tab" aria-selected="${k === sg.chart}" data-chart="${k}">${esc(t(l))}</button>`).join("");
     $("#sgUnits").innerHTML = ["cm", "in"].map((u) =>
