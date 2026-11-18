@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="color-scheme" content="only light">
+  <title>Heja Dashboard</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <!-- Login -->
+  <main class="login" id="loginView" hidden>
+    <form class="login-card" id="loginForm">
+      <div class="logo">HEJA</div>
+      <h1>Dashboard</h1>
+      <label>Email<input type="email" name="email" id="loginEmail" required autocomplete="username"></label>
+      <label>Password<input type="password" name="password" id="loginPassword" required autocomplete="current-password"></label>
+      <button class="btn" type="submit">Sign in</button>
+      <p class="msg" id="loginMsg" role="alert"></p>
+      <p class="hint">Use the admin account created in Supabase → Authentication → Users.</p>
+    </form>
+  </main>
+
+  <!-- App -->
+  <div class="app" id="appView" hidden>
+    <aside class="side">
+      <div class="logo">HEJA</div>
+      <nav id="nav">
+        <button data-view="overview" class="active">Overview</button>
+        <button data-view="orders">Orders <span class="badge" id="badgeOrders" hidden></span></button>
+        <button data-view="visitors">Visitors</button>
+        <button data-view="customers">Customers</button>
+        <button data-view="products">Products &amp; stock</button>
+        <button data-view="reviews">Reviews <span class="badge" id="badgeReviews" hidden></span></button>
+        <button data-view="requests">Returns &amp; restock <span class="badge" id="badgeRequests" hidden></span></button>
+        <button data-view="marketing">Promo codes &amp; emails</button>
+        <button data-view="settings">Settings &amp; social</button>
+      </nav>
+      <div class="side-foot">
+        <a href="./" target="_blank" rel="noopener">Open shop ↗</a>
+        <span id="whoami"></span>
+        <button class="link" id="logout">Sign out</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="top">
+        <h1 id="viewTitle">Overview</h1>
+        <div class="top-tools">
+          <select id="range" aria-label="Date range">
+            <option value="1">Today</option>
+            <option value="7" selected>Last 7 days</option>
+            <option value="30">Last 30 days</option>
+            <option value="90">Last 90 days</option>
+            <option value="3650">All time</option>
+          </select>
+          <button class="btn ghost" id="refresh">Refresh</button>
+        </div>
+      </header>
+      <p class="loading" id="loading">Loading…</p>
+      <section id="view"></section>
+    </main>
+  </div>
+
+  <!-- Detail panel -->
+  <div class="panel-wrap" id="panelWrap" hidden>
+    <aside class="panel" role="dialog" aria-modal="true" aria-labelledby="panelTitle">
+      <header><h2 id="panelTitle"></h2><button class="close" id="panelClose" aria-label="Close">×</button></header>
+      <div class="panel-body" id="panelBody"></div>
+    </aside>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="config.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="only light">
-  <title>Heja | Women's Clothing &amp; Everyday Essentials · Cash on Delivery</title>
-  <meta name="description" content="Shop Heja: refined everyday clothing for women. Dresses, skirts, trousers, hoodies and jackets. Easy ordering on WhatsApp, cash on delivery and free exchanges.">
+  <title>Heja | Women's Clothing &amp; Everyday Essentials</title>
+  <meta name="description" content="Shop Heja: refined everyday clothing for women. Dresses, skirts, trousers, hoodies and jackets. Easy ordering on WhatsApp, payment by bank transfer and free exchanges.">
   <link rel="canonical" href="https://heja-store.vercel.app/">
   <meta name="robots" content="index, follow">
   <meta name="theme-color" content="#111111">
@@ -15,14 +15,14 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Heja">
   <meta property="og:title" content="Heja | Women's Clothing & Everyday Essentials">
-  <meta property="og:description" content="Comfortable everyday clothes. Order on WhatsApp, pay cash on delivery, free exchanges.">
+  <meta property="og:description" content="Comfortable everyday clothes. Order on WhatsApp, pay by bank transfer, free exchanges.">
   <meta property="og:url" content="https://heja-store.vercel.app/">
   <meta property="og:image" content="https://heja-store.vercel.app/assets/og-image.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Heja | Women's Clothing & Everyday Essentials">
-  <meta name="twitter:description" content="Comfortable everyday clothes. Order on WhatsApp, pay cash on delivery.">
+  <meta name="twitter:description" content="Comfortable everyday clothes. Order on WhatsApp, pay by bank transfer.">
   <meta name="twitter:image" content="https://heja-store.vercel.app/assets/og-image.png">
 
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
@@ -37,8 +37,8 @@
     "url": "https://heja-store.vercel.app/",
     "logo": "https://heja-store.vercel.app/assets/apple-touch-icon.png",
     "image": "https://heja-store.vercel.app/assets/og-image.png",
-    "description": "Refined everyday clothing for women. Order on WhatsApp, cash on delivery.",
-    "paymentAccepted": "Cash",
+    "description": "Refined everyday clothing for women. Order on WhatsApp, pay by bank transfer.",
+    "paymentAccepted": "Bank transfer",
     "currenciesAccepted": "USD"
   }
   </script>
@@ -116,7 +116,7 @@
     <section class="perks">
       <div class="container perks-inner">
         <div><strong data-i18n="perk1.t">Easy ordering</strong><span data-i18n="perk1.s">Order in a few taps over WhatsApp</span></div>
-        <div><strong data-i18n="perk2.t">Cash on delivery</strong><span data-i18n="perk2.s">Pay when your order arrives</span></div>
+        <div><strong data-i18n="perk2.t">Simple payment</strong><span data-i18n="perk2.s">Pay by bank transfer; details sent on WhatsApp</span></div>
         <div><strong data-i18n="perk3.t">Free exchanges</strong><span data-i18n="perk3.s">Wrong size? We'll swap it within 14 days</span></div>
       </div>
     </section>
@@ -196,7 +196,7 @@
     <div class="container footer-grid">
       <div>
         <div class="logo">heja<span>.</span></div>
-        <p class="small" data-i18n="footer.pay">We accept cash on delivery</p>
+        <p class="small" data-i18n="footer.pay">Payment by bank transfer</p>
         <p class="heja-story"><svg class="boteh" aria-hidden="true" focusable="false"><use href="#boteh"/></svg><span data-i18n="footer.story"></span></p>
         <div class="social" id="social"></div>
       </div>
@@ -487,6 +487,30 @@
       <button class="btn btn-primary" type="submit" data-i18n="chat.send">Send</button>
     </form>
   </section>
+
+  <!-- Receipt after placing an order -->
+  <div class="overlay" id="receiptOverlay" hidden>
+    <div class="modal modal-sm" role="dialog" aria-modal="true" aria-labelledby="rcTitle">
+      <button class="close" data-close data-i18n-aria="close" aria-label="Close">×</button>
+      <div class="modal-body receipt">
+        <p class="logo receipt-logo">HEJA</p>
+        <h3 id="rcTitle" data-i18n="rc.title">Thank you! Your receipt</h3>
+        <div id="rcBody"></div>
+        <p class="rc-next" data-i18n="rc.next"></p>
+        <a class="btn btn-primary full wa-btn" id="rcWa" target="_blank" rel="noopener" data-i18n="rc.wa">Send receipt on WhatsApp</a>
+        <button type="button" class="btn btn-ghost full" id="rcCopy" data-i18n="rc.copy">Copy receipt</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Analytics consent -->
+  <div class="consent" id="consent" hidden role="region" aria-label="Analytics">
+    <p><span data-i18n="consent.text"></span> <a href="help.html#privacy" data-i18n="consent.more">Privacy policy</a></p>
+    <div class="consent-btns">
+      <button type="button" class="btn btn-ghost" id="consentNo" data-i18n="consent.decline">Decline</button>
+      <button type="button" class="btn btn-primary" id="consentYes" data-i18n="consent.accept">Accept</button>
+    </div>
+  </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 

@@ -116,3 +116,25 @@ This works without Supabase (it falls back to `products.js`). The assistant only
 | `api/chat.js` | Vercel function: AI assistant via OpenRouter |
 | `supabase/schema.sql` | Tables, security rules, `place_order` function, storage bucket |
 | `supabase/seed.sql` | Starter products |
+
+## Dashboard (admin.html)
+
+Open `https://<your-site>/admin.html` and sign in. It shows:
+- **Overview:** visits, unique and returning visitors, average visit time, time from arrival to checkout and to order,
+  conversion rate, paid and awaiting revenue, abandoned carts, the shopping funnel, traffic sources, countries
+  (from time zone), devices, languages, searches, most viewed and best-selling products.
+- **Orders:** mark as paid, change status (cancelling restocks), add courier tracking links, one-click WhatsApp to the
+  customer with your bank-details message, and each customer's shopping journey.
+- **Visitors:** every visit with its full timeline from arrival to leaving.
+- **Customers, products and stock, reviews, returns and restock requests, promo codes, subscribers, settings, social links.**
+
+**Setup (once):**
+1. Supabase → Authentication → Users → **Add user**: your email + a strong password (tick "auto confirm").
+2. Supabase → Table Editor → `admins` → insert a row with the same email in lowercase.
+3. Recommended: Supabase → Authentication → Sign In / Providers → turn **off** "Allow new users to sign up".
+
+**Checkout:** customers place an order, see an on-screen receipt and are sent to WhatsApp with the receipt.
+Reply with your bank details (the dashboard's Settings → Payment message prepares this). Mark the order paid in the dashboard.
+
+**Visitor analytics** run only for visitors who click Accept on the analytics notice (UAE PDPL / GDPR).
+No names, phone numbers or addresses are stored in analytics; they exist only on orders.

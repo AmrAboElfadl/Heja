@@ -17,6 +17,74 @@
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
   };
 
+  // ---------- visitor analytics (only for visitors who accept) ----------
+  const sstore = {
+    get(k) { try { return JSON.parse(sessionStorage.getItem(k)); } catch { return null; } },
+    set(k, v) { try { sessionStorage.setItem(k, JSON.stringify(v)); } catch {} }
+  };
+  let consent = store.get("heja-consent", null); // "yes" | "no" | null (not asked yet)
+  let session = null, queue = [], flushTimer = null;
+  const randomId = () => {
+    const a = new Uint8Array(12);
+    (window.crypto || {}).getRandomValues ? crypto.getRandomValues(a) : a.forEach((_, i) => (a[i] = Math.random() * 256));
+    return [...a].map((b) => b.toString(16).padStart(2, "0")).join("");
+  };
+  function deviceInfo() {
+    const ua = navigator.userAgent || "";
+    const device = /iPad|Tablet/i.test(ua) ? "tablet" : /Mobi|Android|iPhone/i.test(ua) ? "mobile" : "desktop";
+    const browser = /SamsungBrowser/.test(ua) ? "Samsung" : /Edg\//.test(ua) ? "Edge" : /OPR\//.test(ua) ? "Opera" : /Firefox\//.test(ua) ? "Firefox"
+      : /CriOS|Chrome\//.test(ua) ? "Chrome" : /Safari\//.test(ua) ? "Safari" : "Other";
+    const os = /Windows/.test(ua) ? "Windows" : /Android/.test(ua) ? "Android" : /iPhone|iPad|iPod/.test(ua) ? "iOS" : /Mac OS X/.test(ua) ? "macOS" : /Linux/.test(ua) ? "Linux" : "Other";
+    return { device, browser, os };
+  }
+  function startTracking() {
+    if (!SB || consent !== "yes" || session) return;
+    session = sstore.get("heja-session");
+    if (!session) {
+      const known = store.get("heja-visitor", null);
+      const q = new URLSearchParams(location.search);
+      let ref = "";
+      try { ref = document.referrer ? new URL(document.referrer).hostname : ""; } catch {}
+      if (ref === location.hostname) ref = "";
+      session = {
+        id: randomId(), start: new Date().toISOString(), visitor: known || randomId(), returning: !!known,
+        landing: (location.pathname + location.hash).slice(0, 300), referrer: ref,
+        utm_source: q.get("utm_source") || "", utm_medium: q.get("utm_medium") || "", utm_campaign: q.get("utm_campaign") || "",
+        ...deviceInfo(), timezone: (Intl.DateTimeFormat().resolvedOptions().timeZone || ""), screen: `${screen.width}x${screen.height}`
+      };
+      store.set("heja-visitor", session.visitor);
+      sstore.set("heja-session", session);
+      track("open", null, { page: location.pathname + location.hash });
+    }
+    flushTimer = setInterval(() => flush(), 10000);
+    document.addEventListener("visibilitychange", () => {
+      track(document.visibilityState === "hidden" ? "page_hidden" : "page_visible");
+      if (document.visibilityState === "hidden") flush(true);
+    });
+    window.addEventListener("pagehide", () => { track("close"); flush(true); });
+  }
+  function track(type, product, data) {
+    if (consent !== "yes" || !session) return;
+    queue.push({ type, product: product || "", data: data || {}, at: new Date().toISOString() });
+    if (queue.length >= 25) flush();
+  }
+  function flush(leaving) {
+    if (!queue.length || !session || !SB) return;
+    const batch = queue.splice(0, 60);
+    const body = JSON.stringify({ p_session: { ...session, lang, currency: cur }, p_events: batch });
+    try {
+      fetch(`${SB.url}/rest/v1/rpc/track`, { method: "POST", keepalive: !!leaving, headers: { ...SB.headers, "Content-Type": "application/json" }, body }).catch(() => {});
+    } catch {}
+  }
+  function setupConsent() {
+    const box = $("#consent");
+    if (!SB) return;
+    if (consent === null) box.hidden = false;
+    $("#consentYes").addEventListener("click", () => { consent = "yes"; store.set("heja-consent", consent); box.hidden = true; startTracking(); });
+    $("#consentNo").addEventListener("click", () => { consent = "no"; store.set("heja-consent", consent); box.hidden = true; });
+    if (consent === "yes") startTracking();
+  }
+
   // ---------- language ----------
   const LANGS = ["en", "ar", "fa"];
   const browserLang = (navigator.language || "").toLowerCase().slice(0, 2);
@@ -56,14 +124,14 @@
   $$("[data-lang-select]").forEach((el) =>
     el.addEventListener("change", () => {
       if (!LANGS.includes(el.value)) return;
-      lang = el.value; store.set("heja-lang", lang);
+      lang = el.value; store.set("heja-lang", lang); track("lang", null, { lang });
       rerenderOpen();
     })
   );
   $$("[data-cur-select]").forEach((el) =>
     el.addEventListener("change", () => {
       if (!CFG.currencies || !CFG.currencies[el.value]) return;
-      cur = el.value; store.set("heja-cur", cur);
+      cur = el.value; store.set("heja-cur", cur); track("currency", null, { cur });
       rerenderOpen();
     })
   );
@@ -167,16 +235,21 @@
 
   // ---------- static content ----------
   $("#year").textContent = new Date().getFullYear();
-  $("#waContact").href = `https://wa.me/${CFG.whatsappNumber}`;
+
   const realEmail = CFG.orderEmail && !/example\.(com|org|net)$/i.test(CFG.orderEmail);
   $("#mailContact").href = `mailto:${CFG.orderEmail}`;
   $("#mailContact").textContent = CFG.orderEmail;
   $("#mailContact").hidden = !realEmail;
   $("#emailOrderBtn").hidden = !realEmail;
-  $("#social").innerHTML = Object.entries(CFG.social || {})
-    .filter(([, url]) => url)
-    .map(([name, url]) => `<a href="${esc(url)}" target="_blank" rel="noopener">${name[0].toUpperCase() + name.slice(1)}</a>`)
-    .join("");
+  const SOCIAL_NAMES = { instagram: "Instagram", facebook: "Facebook", tiktok: "TikTok", snapchat: "Snapchat", x: "X", youtube: "YouTube", pinterest: "Pinterest" };
+  function renderContact() {
+    $("#waContact").href = `https://wa.me/${String(CFG.whatsappNumber).replace(/\D/g, "")}`;
+    $("#social").innerHTML = Object.entries(CFG.social || {})
+      .filter(([, url]) => /^https:\/\//.test(url || ""))
+      .map(([name, url]) => `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(SOCIAL_NAMES[name] || name)}</a>`)
+      .join("");
+  }
+  $("#waContact").addEventListener("click", () => track("whatsapp"));
 
   function renderAnnounce() {
     const ship = CFG.freeShippingOver > 0 ? t("announce.free", { amount: money(CFG.freeShippingOver) }) : t("announce.fast");
@@ -204,6 +277,7 @@
   const saveFavs = () => store.set("heja-favs", [...favs]);
   function toggleFav(id) {
     if (favs.has(id)) { favs.delete(id); toast(t("fav.removed")); } else { favs.add(id); toast(t("fav.added")); }
+    track("favourite", id, { on: favs.has(id) });
     saveFavs(); renderFavCount(); renderGrid();
     if (pm.id === id) renderPmFav();
   }
@@ -320,15 +394,22 @@
     if (b.dataset.cat) { state.cat = b.dataset.cat; state.tag = state.tag === "favs" ? "" : state.tag; }
     if (b.dataset.tag) state.tag = state.tag === b.dataset.tag ? "" : b.dataset.tag;
     renderGrid();
+    track("filter", null, b.dataset.cat ? { category: b.dataset.cat } : { tag: state.tag || "none" });
   });
-  $("#sizeFilter").addEventListener("change", (e) => { state.size = e.target.value; renderGrid(); });
-  $("#colorFilter").addEventListener("change", (e) => { state.color = e.target.value; renderGrid(); });
+  $("#sizeFilter").addEventListener("change", (e) => { state.size = e.target.value; renderGrid(); track("filter", null, { size: state.size || "all" }); });
+  $("#colorFilter").addEventListener("change", (e) => { state.color = e.target.value; renderGrid(); track("filter", null, { colour: state.color || "all" }); });
   $("#priceFilter").addEventListener("input", (e) => {
     const v = Number(e.target.value);
     state.maxPrice = v >= maxPriceAll() ? Infinity : v;
     renderGrid();
   });
-  $("#search").addEventListener("input", (e) => { state.query = e.target.value; renderGrid(); renderSuggest(); });
+  let searchT;
+  $("#search").addEventListener("input", (e) => {
+    state.query = e.target.value; renderGrid(); renderSuggest();
+    clearTimeout(searchT);
+    const q = state.query.trim();
+    if (q.length >= 2) searchT = setTimeout(() => track("search", null, { q: q.slice(0, 60), results: filtered().length }), 1200);
+  });
   // Search suggestions as you type
   function renderSuggest() {
     const box = $("#searchSuggest"), q = state.query.trim().toLowerCase();
@@ -432,6 +513,7 @@
     if (!o) return;
     e.preventDefault();
     if (!$("#menuOverlay").hidden) closeOverlay($("#menuOverlay"));
+    if (o.dataset.open === "sizes") track("size_guide", pm.id || null);
     if (o.dataset.open === "sizes") {
       if ($("#productOverlay").hidden) { sg.highlight = null; sg.unisex = false; }
       renderSizeGuide();
@@ -466,6 +548,7 @@
       $("#revForm").hidden = true; $("#revMsg").textContent = "";
       $("#pmNotify").hidden = true; $("#pmDetails").open = false;
       $("#pmMedia").classList.remove("zoomed");
+      track("view_product", id);
     }
     $("#pmMedia").style.background = bgFor(p);
     $("#pmCat").textContent = catName(p.category);
@@ -558,6 +641,7 @@
       await rpc("request_restock", { p_product: pm.id, p_color: pm.color || "", p_size: pm.size, p_contact: e.target.email.value });
       e.target.reset(); e.target.hidden = true;
       toast(t("notify.ok"));
+      track("restock", pm.id, { color: pm.color || "", size: pm.size });
     } catch (err) { toast(/email/i.test(err.message) ? t("news.bad") : t("news.offline")); }
     finally { btn.disabled = false; }
   });
@@ -600,6 +684,7 @@
     const p = byId(pm.id);
     const size = recommendSize(p, Number(e.target.h.value), Number(e.target.w.value), e.target.pref.value);
     const out = $("#finderOut");
+    track("size_finder", pm.id, { size: size || "" });
     if (!size) { out.textContent = t("finder.none"); return; }
     out.innerHTML = `<span>${esc(t("finder.result", { size }))}</span> <button type="button" class="link-btn" data-pick="${esc(size)}">${esc(t("finder.select", { size }))}</button>`;
   });
@@ -645,6 +730,7 @@
       await rpc("submit_review", { p_product: pm.id, p_name: d.name, p_rating: Number(d.rating), p_fit: d.fit, p_comment: d.comment || "" });
       f.reset(); f.hidden = true;
       $("#revMsg").textContent = t("rev.ok");
+      track("review", pm.id, { rating: Number(d.rating) });
     } catch (err) { $("#revMsg").textContent = err.message; }
     finally { btn.disabled = false; }
   });
@@ -667,6 +753,7 @@
   $("#pmShare").addEventListener("click", async () => {
     const p = byId(pm.id);
     const url = location.origin + location.pathname + productHash(pm.id);
+    track("share", pm.id);
     if (navigator.share) {
       try { await navigator.share({ title: `${pName(p)} | Heja`, url }); } catch {}
       return;
@@ -833,6 +920,7 @@
     c.classList.remove("bump"); void c.offsetWidth; c.classList.add("bump");
     const col = findColor(p, color);
     toast(t("toast.added", { name: pName(p), size: col ? `${colorName(col)} · ${size}` : size }));
+    track("add_to_cart", id, { color, size, qty });
     return true;
   }
 
@@ -895,12 +983,13 @@
       l.qty += 1;
     }
     else if (b.dataset.dec) { const l = cart[b.dataset.dec]; l.qty > 1 ? l.qty-- : cart.splice(b.dataset.dec, 1); }
-    else if (b.dataset.rm) cart.splice(b.dataset.rm, 1);
+    else if (b.dataset.rm) { track("remove_from_cart", cart[b.dataset.rm].id); cart.splice(b.dataset.rm, 1); }
     else return;
     save(); renderCart(); refreshPromo();
   });
-  $("#cartOpen").addEventListener("click", () => openOverlay($("#cartOverlay")));
+  $("#cartOpen").addEventListener("click", () => { openOverlay($("#cartOverlay")); track("open_cart"); });
   $("#checkoutBtn").addEventListener("click", () => {
+    track("begin_checkout", null, { total: totals().total, items: knownLines().reduce((n, l) => n + l.qty, 0) });
     closeOverlay($("#cartOverlay"));
     renderCart();
     openOverlay($("#checkoutOverlay"));
@@ -987,15 +1076,17 @@
     // Message for the shop owner (always English so it reads the same every time)
     const fmt = (n) => `${Number(n).toLocaleString("en-US", { minimumFractionDigits: Number(n) % 1 ? 2 : 0, maximumFractionDigits: 2 })} ${CFG.currency}`;
     const msg = [
-      `New order from ${CFG.brand} website`,
+      `🧾 ${CFG.brand.toUpperCase()} ORDER RECEIPT`,
       `Order: ${order.no}`,
+      `Date: ${new Date().toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}`,
       "",
       ...order.lines.map((l) => `• ${l.name}${l.color ? ` | ${l.color}` : ""} | Size ${l.size} | x${l.qty} = ${fmt(l.amount)}`),
       "",
       `Subtotal: ${fmt(order.subtotal)}`,
       Number(order.discount) ? `Discount (${order.promo}): -${fmt(order.discount)}` : "",
       `Shipping: ${Number(order.shipping) ? fmt(order.shipping) : "Free"}`,
-      `Total: ${fmt(order.total)} (cash on delivery)`,
+      `TOTAL: ${fmt(order.total)}`,
+      "Payment: Bank transfer. Please send me your bank details.",
       "",
       `Name: ${d.name}`,
       `Phone: ${d.phone}`,
@@ -1004,12 +1095,13 @@
       d.notes ? `Notes: ${d.notes}` : ""
     ].filter((x, i, a) => x !== "" || (a[i - 1] !== "" && i > 0)).join("\n");
 
+    const waUrl = `https://wa.me/${String(CFG.whatsappNumber).replace(/\D/g, "")}?text=${encodeURIComponent(msg)}`;
     if (via === "email") {
       window.location.href = `mailto:${CFG.orderEmail}?subject=${encodeURIComponent(`${CFG.brand} order ${order.no}`)}&body=${encodeURIComponent(msg)}`;
-    } else {
-      const url = `https://wa.me/${CFG.whatsappNumber}?text=${encodeURIComponent(msg)}`;
-      if (tab) tab.location.href = url; else window.open(url, "_blank");
-    }
+    } else if (tab) tab.location.href = waUrl;
+    track("order_placed", null, { order_no: order.no, total: Number(order.total), items: order.lines.length });
+    flush();
+    showReceipt(order, d, msg, waUrl);
 
     cart = []; save();
     promo = null; promoDiscount = 0; store.set("heja-promo", null);
@@ -1018,8 +1110,28 @@
     placing = false;
     setSubmitting(form, false);
     closeOverlay($("#checkoutOverlay"));
-    toast(t("toast.thanks", { no: order.no }));
+    openOverlay($("#receiptOverlay"));
   });
+
+  // On-screen receipt the customer can resend or copy
+  function showReceipt(order, d, msg, waUrl) {
+    const rows = order.lines.map((l) => `<tr><td>${esc(l.name)}${l.color ? `<br><small>${esc(l.color)} · ${esc(l.size)}</small>` : `<br><small>${esc(l.size)}</small>`}</td><td class="num">× ${l.qty}</td><td class="num">${paid(l.amount)}</td></tr>`).join("");
+    $("#rcBody").innerHTML = `
+      <dl class="rc-meta"><dt>${esc(t("rc.order"))}</dt><dd><strong>${esc(order.no)}</strong></dd>
+        <dt>${esc(t("rc.date"))}</dt><dd>${esc(new Date().toLocaleString(lang === "fa" ? "fa-IR" : lang === "ar" ? "ar-EG" : "en-GB", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" }))}</dd></dl>
+      <table class="rc-table"><thead><tr><th>${esc(t("rc.items"))}</th><th></th><th></th></tr></thead><tbody>${rows}
+        <tr><td colspan="2">${esc(t("cart.subtotal"))}</td><td class="num">${paid(order.subtotal)}</td></tr>
+        ${Number(order.discount) ? `<tr><td colspan="2">${esc(t("cart.discount", { code: order.promo || "" }))}</td><td class="num">−${paid(order.discount)}</td></tr>` : ""}
+        <tr><td colspan="2">${esc(t("cart.shipping"))}</td><td class="num">${Number(order.shipping) ? paid(order.shipping) : esc(t("cart.free"))}</td></tr>
+        <tr class="rc-total"><td colspan="2">${esc(t("cart.total"))}</td><td class="num">${paid(order.total)}</td></tr></tbody></table>
+      <dl class="rc-meta"><dt>${esc(t("rc.deliver"))}</dt><dd>${esc(d.name)}<br>${esc(d.phone)}<br>${esc(d.address)}, ${esc(d.city)}</dd>
+        <dt>${esc(t("rc.payment"))}</dt><dd>${esc(t("rc.bank"))}</dd></dl>`;
+    $("#rcWa").href = waUrl;
+    $("#rcCopy").onclick = async () => {
+      try { await navigator.clipboard.writeText(msg); toast(t("rc.copied")); } catch { toast(msg.slice(0, 80)); }
+    };
+  }
+  $("#rcWa").addEventListener("click", () => track("whatsapp", null, { from: "receipt" }));
 
   // ---------- order tracking ----------
   $("#trackForm").addEventListener("submit", async (e) => {
@@ -1029,6 +1141,7 @@
     const btn = $("button[type=submit]", e.target);
     btn.disabled = true;
     try {
+      track("track_order");
       const r = await rpc("track_order_v2", { p_order_no: e.target.no.value, p_phone: e.target.phone.value });
       if (!r.found) { out.innerHTML = `<p>${esc(t("track.notFound"))}</p>`; return; }
       const flow = ["new", "confirmed", "shipped", "delivered"];
@@ -1058,6 +1171,7 @@
     try {
       const r = await rpc("request_return", { p_order_no: d.no, p_phone: d.phone, p_kind: d.kind, p_reason: d.reason, p_details: d.details || "" });
       out.innerHTML = `<div class="track-card"><p>${esc(t("ret.ok", { ref: r.ref }))}</p></div>`;
+      track("return", null, { kind: d.kind, reason: d.reason });
       f.reset();
     } catch (err) {
       out.innerHTML = `<p>${esc(/not found/i.test(err.message) ? t("ret.notFound") : /cancel/i.test(err.message) ? err.message : t("ret.offline"))}</p>`;
@@ -1075,6 +1189,7 @@
     try {
       const r = await rpc("subscribe", { p_email: e.target.email.value });
       msg.textContent = t("news.ok", { code: r.code });
+      track("newsletter");
       msg.classList.add("ok");
       e.target.reset();
     } catch (err) {
@@ -1107,6 +1222,7 @@
     if (!text || chat.busy) return;
     $("#chatInput").value = "";
     addMsg("me", text);
+    track("chat"); // the message itself is never stored
     chat.history.push({ role: "user", content: text });
     chat.busy = true;
     const typing = addMsg("bot typing", t("chat.typing"));
@@ -1134,7 +1250,7 @@
       const get = (path) => fetch(`${SB.url}/rest/v1/${path}`, { headers: SB.headers });
       const [pr, sr, vr, rr] = await Promise.all([
         get("products?select=*&order=sort_order.asc,name.asc"),
-        get("store_settings?select=shipping_fee,free_shipping_over&id=eq.1"),
+        get("store_settings?select=*&id=eq.1"),
         get("product_variants?select=product_id,color,color_ar,hex,size,stock,sort_order&order=sort_order.asc"),
         get("reviews?select=product_id,name,rating,fit,comment,created_at&order=created_at.desc&limit=500")
       ]);
@@ -1161,7 +1277,12 @@
       catalogReady = true;
       if (sr.ok) {
         const [st] = await sr.json();
-        if (st) { CFG.shippingFee = Number(st.shipping_fee); CFG.freeShippingOver = Number(st.free_shipping_over); }
+        if (st) {
+          CFG.shippingFee = Number(st.shipping_fee); CFG.freeShippingOver = Number(st.free_shipping_over);
+          if (st.whatsapp_number) CFG.whatsappNumber = st.whatsapp_number;
+          if (st.social && Object.keys(st.social).length) CFG.social = st.social;
+          if (Number(st.toman_per_usd) > 0 && CURS.IRT) CURS.IRT.perUsd = Number(st.toman_per_usd);
+        }
       }
     } catch (err) {
       console.warn("Using built-in catalog; Supabase unavailable:", err);
@@ -1180,11 +1301,12 @@
 
   function renderAll() {
     if (pruneCart()) { save(); toast(t("stock.changed")); }
-    applyLang(); $("#year").textContent = fmtNum(new Date().getFullYear()).replace(/[,٬]/g, ""); renderAnnounce(); renderHero(); renderFilters(); renderGrid(); renderCart(); renderFavCount(); renderRecent();
+    applyLang(); renderContact(); $("#year").textContent = fmtNum(new Date().getFullYear()).replace(/[,٬]/g, ""); renderAnnounce(); renderHero(); renderFilters(); renderGrid(); renderCart(); renderFavCount(); renderRecent();
   }
   // Show the built-in catalog instantly, then refresh from the database.
   renderAll();
   setupVideo();
+  setupConsent();
   loadRates().then((changed) => { if (changed && cur !== BASE) renderAll(); });
   loadRemote().then(() => { renderAll(); refreshPromo(); openFromHash(); });
 })();

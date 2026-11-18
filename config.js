@@ -18,9 +18,9 @@ window.HEJA_CONFIG = {
     IRT: { perUsd: 96000 }
   },
 
-  // Orders are sent here — no payment fees, no backend.
+  // Orders are sent here on WhatsApp; payment by bank transfer.
   // WhatsApp number in international format, digits only (no +, no spaces).
-  whatsappNumber: "201000000000",
+  whatsappNumber: "971545977453",   // can also be changed in the dashboard → Settings
   // Fallback / alternative: orders by email.
   orderEmail: "orders@example.com",
 
