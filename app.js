@@ -69,33 +69,36 @@
   );
 
   // ---------- helpers ----------
-  // ---------- currencies (prices are stored in EGP) ----------
-  const CURS = CFG.currencies || { EGP: { perEgp: 1 } };
-  let cur = store.get("heja-cur", "EGP");
-  if (!CURS[cur]) cur = "EGP";
+  // ---------- currencies (prices are stored in the store currency, USD) ----------
+  const BASE = CFG.currency || "USD";
+  const CURS = CFG.currencies || { [BASE]: { perUsd: 1 } };
+  let cur = store.get("heja-cur", BASE);
+  if (!CURS[cur]) cur = BASE; // e.g. a shopper who had EGP saved
   const LABELS = {
-    EGP: { en: "EGP", ar: "ج.م", fa: "پوند مصر" },
     AED: { en: "AED", ar: "د.إ", fa: "درهم" },
     USD: { en: "$", ar: "$", fa: "دلار" },
     EUR: { en: "€", ar: "€", fa: "یورو" },
     IRT: { en: "Toman", ar: "تومان", fa: "تومان" }
   };
-  const curName = (code) => ({ EGP: "EGP", AED: "AED", USD: "USD", EUR: "EUR", IRT: lang === "en" ? "Toman" : "تومان" })[code] || code;
+  const curName = (code) => ({ AED: "AED", USD: "USD", EUR: "EUR", IRT: lang === "en" ? "Toman" : "تومان" })[code] || code;
   const fmtMoney = (amount, code) => {
     const lab = (LABELS[code] || {})[lang] || code;
-    const v = fmtNum(amount, 0);
+    const n = Number(amount);
+    // whole amounts stay clean ($20); cents shown when needed ($1.25); toman always whole
+    const cents = code !== "IRT" && Math.abs(n - Math.round(n)) > 0.004;
+    const v = n.toLocaleString(numLocale(), { minimumFractionDigits: cents ? 2 : 0, maximumFractionDigits: cents ? 2 : 0 });
     if (lang === "en" && (code === "USD" || code === "EUR")) return `${lab}${v}`;
     if (lang === "en" && code === "AED") return `${lab} ${v}`;
     return `${v} ${lab}`;
   };
-  // money(n): price in the shopper's currency. egp(n): the amount actually paid.
-  const money = (n) => fmtMoney(Number(n) * (CURS[cur] ? CURS[cur].perEgp : 1), CURS[cur] ? cur : "EGP");
-  const egp = (n) => fmtMoney(Number(n), "EGP");
+  // money(n): price in the shopper's currency. paid(n): the amount actually paid (store currency).
+  const money = (n) => fmtMoney(Number(n) * (CURS[cur] ? CURS[cur].perUsd : 1), CURS[cur] ? cur : BASE);
+  const paid = (n) => fmtMoney(Number(n), BASE);
   async function loadRates() {
-    const KEY = "heja-rates";
+    const KEY = "heja-rates-usd"; // rates saved under the old EGP base are ignored
     const cached = store.get(KEY, null);
     const apply = (rates) => Object.entries(rates || {}).forEach(([c, v]) => {
-      if (CURS[c] && c !== "IRT" && c !== "EGP" && Number(v) > 0) CURS[c].perEgp = Number(v);
+      if (CURS[c] && c !== "IRT" && c !== BASE && Number(v) > 0) CURS[c].perUsd = Number(v);
     });
     if (cached && Date.now() - cached.at < 6 * 3600 * 1000) { apply(cached.rates); return false; }
     try {
@@ -212,7 +215,8 @@
 
   // ---------- shop: filters, search, sort ----------
   const state = { cat: "All", tag: "", size: "", color: "", maxPrice: Infinity, query: "", sort: "featured" };
-  const maxPriceAll = () => Math.ceil(Math.max(0, ...PRODUCTS.map((p) => p.price)) / 50) * 50;
+  const priceStep = () => (Math.max(0, ...PRODUCTS.map((p) => p.price)) > 500 ? 50 : 1);
+  const maxPriceAll = () => Math.ceil(Math.max(0, ...PRODUCTS.map((p) => p.price)) / priceStep()) * priceStep();
 
   function renderFilters() {
     const CAT_ORDER = ["Women", "Unisex", "Accessories", "Men", "Kids"];
@@ -245,7 +249,7 @@
 
     const max = maxPriceAll();
     const r = $("#priceFilter");
-    r.max = max; r.min = Math.min(100, max);
+    r.max = max; r.step = priceStep(); r.min = Math.min(priceStep() * 2, max);
     r.value = Number.isFinite(state.maxPrice) ? state.maxPrice : max;
   }
 
@@ -877,8 +881,8 @@
     $("#promoForm").hidden = !!promo;
     $("#promoApplied").hidden = !promo;
     $("#promoText").textContent = promo ? t("promo.ok", { code: promo.code }) : "";
-    const approx = cur !== "EGP";
-    $("#coTotal").textContent = approx ? t("cur.pay", { amount: egp(t0.total) }) : t("co.total", { amount: money(t0.total) });
+    const approx = cur !== BASE;
+    $("#coTotal").textContent = approx ? t("cur.pay", { amount: paid(t0.total) }) : t("co.total", { amount: money(t0.total) });
     ["#curNote", "#coCurNote"].forEach((id) => { $(id).hidden = !approx; $(id).textContent = approx ? t("cur.note", { cur: curName(cur) }) : ""; });
   }
 
@@ -981,7 +985,7 @@
     }
 
     // Message for the shop owner (always English so it reads the same every time)
-    const fmt = (n) => `${Number(n).toLocaleString("en-US")} ${CFG.currency}`;
+    const fmt = (n) => `${Number(n).toLocaleString("en-US", { minimumFractionDigits: Number(n) % 1 ? 2 : 0, maximumFractionDigits: 2 })} ${CFG.currency}`;
     const msg = [
       `New order from ${CFG.brand} website`,
       `Order: ${order.no}`,
@@ -1181,6 +1185,6 @@
   // Show the built-in catalog instantly, then refresh from the database.
   renderAll();
   setupVideo();
-  loadRates().then((changed) => { if (changed && cur !== "EGP") renderAll(); });
+  loadRates().then((changed) => { if (changed && cur !== BASE) renderAll(); });
   loadRemote().then(() => { renderAll(); refreshPromo(); openFromHash(); });
 })();

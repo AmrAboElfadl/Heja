@@ -4,22 +4,19 @@
 window.HEJA_CONFIG = {
   brand: "Heja",
   tagline: "Everyday clothes, made to move with you.",
-  currency: "EGP",              // e.g. "EGP", "USD", "EUR", "SAR"
-  currencyAr: "ج.م",            // currency shown when the site is in Arabic
+  currency: "USD",              // the store currency: prices, checkout and payment
 
-  // Display currencies. Orders are always placed and paid in EGP; other currencies are
-  // approximate. AED, USD and EUR update daily from /api/rates; these are fallbacks.
-  // perEgp = how much of that currency 1 EGP buys.
+  // Display currencies. Orders are placed and paid in USD; other currencies are approximate.
+  // AED and EUR update daily from /api/rates; these numbers are fallbacks.
+  // perUsd = how much of that currency 1 US dollar buys.
   currencies: {
-    EGP: { perEgp: 1 },
-    AED: { perEgp: 0.0765 },
-    USD: { perEgp: 0.0208 },
-    EUR: { perEgp: 0.0179 },
+    USD: { perUsd: 1 },
+    AED: { perUsd: 3.6725 },
+    EUR: { perUsd: 0.86 },
     // Iranian toman: display only (no Iranian payments). Official and market rates differ
     // a lot, so this is set by you and never updated automatically. Example value: update it.
-    IRT: { perEgp: 2000 }
+    IRT: { perUsd: 96000 }
   },
-  currencyPosition: "after",   // "before" → $25   |  "after" → 25 EGP
 
   // Orders are sent here — no payment fees, no backend.
   // WhatsApp number in international format, digits only (no +, no spaces).
@@ -27,10 +24,10 @@ window.HEJA_CONFIG = {
   // Fallback / alternative: orders by email.
   orderEmail: "orders@example.com",
 
-  // Display defaults only. When Supabase is connected, the real values come
+  // Display defaults only (USD). When Supabase is connected, the real values come
   // from the store_settings table and order totals are calculated there.
-  shippingFee: 60,             // flat shipping; set 0 for free shipping
-  freeShippingOver: 1500,      // order total for free shipping; 0 to disable
+  shippingFee: 1.25,           // flat shipping; set 0 for free shipping
+  freeShippingOver: 30,        // order total for free shipping; 0 to disable
 
   // Supabase (database for products + orders). Leave empty to use products.js only.
   // The anon/publishable key is safe to put here: the database only lets visitors

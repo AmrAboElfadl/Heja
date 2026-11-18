@@ -100,16 +100,16 @@ window.HEJA_I18N.fa = {
   "ret.r5": "کالای اشتباه رسید", "ret.r6": "منصرف شدم", "ret.details": "توضیحات (اختیاری)", "ret.send": "ارسال درخواست",
   "ret.ok": "درخواست {ref} ثبت شد. ظرف ۲۴ ساعت در واتس‌اپ برای هماهنگی تحویل با شما تماس می‌گیریم.",
   "ret.notFound": "این سفارش پیدا نشد. شماره سفارش و تلفن را بررسی کنید.", "ret.offline": "مرجوعی فعلاً در دسترس نیست. لطفاً در واتس‌اپ پیام دهید.",
-  "cur.label": "واحد پول", "cur.note": "قیمت‌ها به {cur} تقریبی است. پرداخت به پوند مصر (EGP) انجام می‌شود.",
+  "cur.label": "واحد پول", "cur.note": "قیمت‌ها به {cur} تقریبی است. پرداخت به دلار آمریکا (USD) انجام می‌شود.",
   "cur.pay": "مبلغ پرداختی هنگام تحویل: {amount}", "lang.label": "زبان"
 };
 
 // New currency texts for English and Arabic
 Object.assign(window.HEJA_I18N.en, {
-  "cur.label": "Currency", "cur.note": "Prices in {cur} are approximate. You pay in Egyptian pounds (EGP).",
+  "cur.label": "Currency", "cur.note": "Prices in {cur} are approximate. You pay in US dollars (USD).",
   "cur.pay": "You pay on delivery: {amount}", "lang.label": "Language"
 });
 Object.assign(window.HEJA_I18N.ar, {
-  "cur.label": "العملة", "cur.note": "الأسعار بـ{cur} تقريبية. الدفع بالجنيه المصري (EGP).",
+  "cur.label": "العملة", "cur.note": "الأسعار بـ{cur} تقريبية. الدفع بالدولار الأمريكي (USD).",
   "cur.pay": "المبلغ المطلوب عند الاستلام: {amount}", "lang.label": "اللغة"
 });

@@ -90,9 +90,10 @@ Free fashion clips you're allowed to use: pexels.com/videos and pixabay.com/vide
 product text in Supabase (`name_ar` / `name_fa`, `description_*`, `fabric_*`, `care_*`, and `color_ar` / `color_fa`
 in `product_variants`). Persian uses Vazirmatn, Markazi Text and Noto Nastaliq Urdu (calligraphy headline).
 
-**Currencies:** shoppers can view prices in EGP, AED, USD, EUR or Iranian toman. Orders are always placed and paid
-in EGP; other currencies are shown as approximate. AED/USD/EUR update daily through `api/rates.js`; set the toman
-rate yourself in `config.js` → `currencies.IRT.perEgp` (display only, no Iranian payments).
+**Currencies:** the store currency is **US dollars (USD)**: product prices, shipping, promo codes,
+checkout and payment. Shoppers can also view approximate prices in AED, EUR or Iranian toman. AED and EUR
+update daily through `api/rates.js`; set the toman rate yourself in `config.js` → `currencies.IRT.perUsd`
+(display only, no Iranian payments). Prices are edited in Supabase → `products.price` (USD).
 
 **Size chart:** edit `size-chart.js` (body measurements in cm; inches are calculated automatically).
 
