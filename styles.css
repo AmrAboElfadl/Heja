@@ -622,3 +622,13 @@ html[lang="fa"] .hero.has-video h1 { max-width: 16ch; }
 
 /* Video pause button sits opposite the chat button so they never overlap */
 .video-toggle { inset-inline-end: auto; inset-inline-start: 20px; }
+
+/* Cart and windows: always reachable on short screens (fix: Checkout button was cut off) */
+.drawer { height: 100vh; height: 100dvh; max-height: 100dvh; overflow-y: auto; overscroll-behavior: contain; }
+.drawer-body { flex: 1 0 auto; overflow: visible; }
+.drawer-foot { position: sticky; bottom: 0; background: var(--surface); z-index: 1; }
+.modal { max-height: calc(100dvh - 32px); overscroll-behavior: contain; }
+@media (max-height: 820px) {
+  /* not enough room to pin the totals: let the whole cart scroll as one page */
+  .drawer-foot { position: static; }
+}
