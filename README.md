@@ -5,13 +5,13 @@ A fast, mobile-friendly clothing shop built entirely on **free tiers**:
 | Service | What it does | Cost |
 |---|---|---|
 | **GitHub** | Stores the code; every push redeploys the site | Free |
-| **Vercel** | Hosts the website + the AI assistant function | Free (Hobby) |
+| **Cloudflare Pages** | Hosts the website + the AI assistant and exchange-rate functions (commercial use allowed) | Free |
 | **Supabase** | Database for products, orders and settings, plus photo storage | Free |
 | **OpenRouter** | AI style assistant (free models) | Free |
 
 Customers browse, pick sizes, add to cart and check out. Each order is **saved in
 Supabase** (prices are recalculated on the server, so they can't be tampered with)
-and sent to you on **WhatsApp** (or email). Customers pay cash on delivery.
+and the customer sends you the receipt on **WhatsApp**, then pays by bank transfer.
 
 ## Brand identity
 
@@ -34,7 +34,7 @@ Fonts (Google Fonts, free): **Cormorant Garamond** (headlines, HEJA wordmark), *
 ## How it fits together
 
 ```
-Browser ──► Vercel (index.html, app.js …)
+Browser ──► Cloudflare Pages (index.html, app.js …)
    │            └── /api/chat ──► OpenRouter (key stays on the server)
    └──────────► Supabase: read products · place_order() · settings
 ```
@@ -71,13 +71,18 @@ Browser ──► Vercel (index.html, app.js …)
 1. Create a free account at openrouter.ai → Keys → create a key.
 2. Don't put it in any file. It goes into Vercel (next step).
 
-### 3. Vercel
-1. vercel.com → Add New Project → import the `heja` GitHub repo (no build settings needed).
-2. Settings → Environment Variables:
-   - `OPENROUTER_API_KEY`: your OpenRouter key (required for the assistant)
+### 3. Cloudflare Pages
+1. dash.cloudflare.com → Workers & Pages → Create → **Pages** → Connect to Git → pick the `Heja` repo.
+2. Build settings: Framework preset **None**, Build command `sh build.sh`, Build output directory `public`.
+3. Settings → Variables and Secrets (Production):
+   - `OPENROUTER_API_KEY` (type **Secret**): your OpenRouter key (required for the assistant)
    - `OPENROUTER_MODEL`: optional, defaults to `openrouter/free` (OpenRouter's free-models router)
-   - `SUPABASE_URL`, `SUPABASE_ANON_KEY`: optional, so the assistant knows the live catalog
-3. Redeploy. Your site is live at `https://heja-xxx.vercel.app`.
+   - `SUPABASE_URL`, `SUPABASE_ANON_KEY`: the same values as in `config.js`, so the assistant knows the live catalogue and stock
+   - `SITE_URL`: your site address (e.g. `https://heja.pages.dev`), used for Google and social-media previews
+4. Deployments → Retry deployment after changing variables. Every push to GitHub redeploys automatically.
+
+Functions live in `functions/api/` (`chat.js`, `rates.js`). `build.sh` copies only the public files, so this README
+and the SQL files are not published. `_headers` adds security headers and keeps the dashboard out of search engines.
 
 ### 4. Your details
 Edit `config.js`: WhatsApp number, email, currency and social links.
@@ -113,7 +118,10 @@ This works without Supabase (it falls back to `products.js`). The assistant only
 | `app.js` | Shop logic: catalog, filters, cart, checkout, assistant widget |
 | `config.js` | Store settings + Supabase connection |
 | `products.js` | Built-in catalog, used when Supabase isn't connected |
-| `api/chat.js` | Vercel function: AI assistant via OpenRouter |
+| `functions/api/chat.js` | Cloudflare function: AI assistant via OpenRouter |
+| `functions/api/rates.js` | Cloudflare function: daily AED/EUR rates |
+| `build.sh`, `_headers` | Cloudflare build step and security headers |
+| `api/` | Old Vercel versions of the functions (can be deleted after the move) |
 | `supabase/schema.sql` | Tables, security rules, `place_order` function, storage bucket |
 | `supabase/seed.sql` | Starter products |
 

@@ -68,7 +68,7 @@ export default async function handler(req, res) {
     "Help customers pick products, sizes and outfits. Keep answers short (2-4 sentences), warm and practical.",
     "Reply in the same language the customer writes in (English, Arabic or Persian).",
     "Only recommend products from the catalog below and never invent prices, stock or discounts. Only suggest colours and sizes listed as in stock.",
-    "Ordering: customers add items to the cart and check out; orders are confirmed on WhatsApp and paid cash on delivery.",
+    "Ordering: customers add items to the cart and check out; the customer then sends the order receipt to Heja on WhatsApp and pays by bank transfer (Heja sends the bank details on WhatsApp).",
     "If you don't know something (e.g. delivery time to a specific area), suggest contacting Heja on WhatsApp.",
     currency ? `Prices are in ${currency}.` : "",
     catalog ? `Catalog:\n${catalog}` : "The catalog is shown on the website."
