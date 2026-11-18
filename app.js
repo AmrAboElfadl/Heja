@@ -693,8 +693,7 @@
     pruneCart(); save();
     applyLang(); renderAnnounce(); renderHero(); renderFilters(); renderGrid(); renderCart(); renderFavCount(); renderRecent();
   }
-  applyLang();
-  if (SB) $("#grid").innerHTML = `<p class="empty">${esc(t("loading"))}</p>`;
-  else renderAll();
+  // Show the built-in catalog instantly, then refresh from the database.
+  renderAll();
   loadRemote().then(() => { renderAll(); refreshPromo(); openFromHash(); });
 })();
