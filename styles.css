@@ -8,13 +8,14 @@
   --line: #E6E0D6;      /* Stone */
   --greige: #EDE9E3;    /* Greige: product backdrop */
   --accent: #9A4A2C;    /* Heja Clay: signature accent, use sparingly */
+  --firuzeh: #1F6F6B;   /* Firuzeh: Persian turquoise, hidden accent */
   --forest: #111111;
   --radius: 0;
   --shadow: 0 10px 30px rgba(17, 17, 17, .06);
   --font: "Jost", "Helvetica Neue", Arial, sans-serif;
   --display: "Cormorant Garamond", "Times New Roman", serif;
 }
-html[lang="ar"] { --font: "IBM Plex Sans Arabic", Tahoma, sans-serif; --display: "Amiri", "Times New Roman", serif; }
+html[lang="ar"] { --font: "Vazirmatn", Tahoma, sans-serif; --display: "Markazi Text", "Times New Roman", serif; }
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
@@ -477,3 +478,32 @@ html[lang="ar"] .chat-fab { letter-spacing: 0; font-size: .85rem; }
   .header-inner { grid-template-columns: auto 1fr auto; }
   .logo { flex: none; font-size: 1.45rem; }
 }
+
+
+/* =========================================================
+   Hêja heritage touches: Senneh kilim, boteh, firuzeh
+   ========================================================= */
+::selection { background: var(--firuzeh); color: #fff; }
+:focus-visible { outline-color: var(--firuzeh); }
+.nav a:hover, .footer-grid a:hover, .link-btn:hover { color: var(--firuzeh); }
+.badge:not(.sale) { color: var(--firuzeh); }
+.hero.has-video .badge:not(.sale) { color: inherit; }
+
+/* Kilim strip under the announcement bar and above the footer */
+.announce { position: relative; padding-bottom: calc(.75em + 12px); }
+.announce::after { content: ""; position: absolute; left: 0; right: 0; bottom: 4px; height: 8px; opacity: .9;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='14' viewBox='0 0 28 14'%3E%3Cpath d='M14 1.5 L21 7 L14 12.5 L7 7 Z' fill='none' stroke='%239A4A2C' stroke-width='1.2'/%3E%3Cpath d='M14 4.6 L17 7 L14 9.4 L11 7 Z' fill='%231F6F6B'/%3E%3Cpath d='M0 5 L2 7 L0 9 M28 5 L26 7 L28 9' fill='%238C8279'/%3E%3Ccircle cx='3.5' cy='7' r='.9' fill='%238C8279'/%3E%3Ccircle cx='24.5' cy='7' r='.9' fill='%238C8279'/%3E%3C/svg%3E") repeat-x center / 16px 8px; }
+.footer { position: relative; }
+.footer::before { content: ""; position: absolute; left: 0; right: 0; top: -1px; height: 14px; transform: translateY(-50%);
+  background: var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='14' viewBox='0 0 28 14'%3E%3Cpath d='M14 1.5 L21 7 L14 12.5 L7 7 Z' fill='none' stroke='%239A4A2C' stroke-width='1.2'/%3E%3Cpath d='M14 4.6 L17 7 L14 9.4 L11 7 Z' fill='%231F6F6B'/%3E%3Cpath d='M0 5 L2 7 L0 9 M28 5 L26 7 L28 9' fill='%238C8279'/%3E%3Ccircle cx='3.5' cy='7' r='.9' fill='%238C8279'/%3E%3Ccircle cx='24.5' cy='7' r='.9' fill='%238C8279'/%3E%3C/svg%3E") repeat-x center / 28px 14px; }
+
+/* Boteh (Persian paisley) ornament */
+.boteh { width: 16px; height: 24px; color: var(--accent); flex: none; }
+.boteh.lg { width: 26px; height: 39px; color: #c9a08c; display: block; margin-bottom: 14px; }
+.with-boteh { display: flex; align-items: center; gap: 14px; }
+.with-boteh .boteh { width: 18px; height: 27px; }
+.heja-story { display: flex; align-items: center; gap: 10px; font-size: .82rem; color: var(--muted); max-width: 34ch; margin-top: 14px; }
+.heja-story .boteh { width: 14px; height: 21px; }
+.heja-story span { font-family: var(--font); }
+
+.footer .logo { justify-self: start; padding-inline-start: 0; }

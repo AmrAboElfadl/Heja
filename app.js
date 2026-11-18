@@ -91,7 +91,9 @@
 
   function renderAnnounce() {
     const ship = CFG.freeShippingOver > 0 ? t("announce.free", { amount: money(CFG.freeShippingOver) }) : t("announce.fast");
-    $("#announce").textContent = `${ship} · ${t("announce.cod")} · ${t("announce.welcome")}`;
+    const now = new Date(), m = now.getMonth() + 1, d = now.getDate();
+    const nowruz = (m === 3 && d >= 14) || (m === 4 && d <= 2); // Newroz / Nowruz, around 21 March
+    $("#announce").textContent = `${nowruz ? t("announce.nowruz") + " · " : ""}${ship} · ${t("announce.cod")} · ${t("announce.welcome")}`;
   }
 
   function renderHero() {
