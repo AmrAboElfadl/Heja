@@ -34,6 +34,11 @@ Browser ──► Vercel (index.html, app.js …)
 - `products`: add, edit or hide (`active` = false) products, and change prices.
 - `orders` / `order_items`: see every order and update `status` (new → confirmed → shipped → delivered).
 - `store_settings`: shipping fee and free-shipping threshold.
+- `promo_codes`: create discount codes (UPPERCASE `code`, plus `percent_off` **or** `amount_off`;
+  optional `min_subtotal` and `expires_at`; untick `active` to stop a code). `WELCOME10` is the newsletter reward.
+- `subscribers`: newsletter sign-ups (export as CSV from the Table Editor).
+- `products.name_ar` / `description_ar`: Arabic text shown when visitors switch to Arabic.
+- Order tracking: customers enter their order number + phone; they see the `status` you set on the order.
 - Photos: Storage → `product-images` → upload, copy the public URL into the product's `image`.
 
 ### 2. OpenRouter

@@ -5,6 +5,7 @@ window.HEJA_CONFIG = {
   brand: "Heja",
   tagline: "Everyday clothes, made to move with you.",
   currency: "EGP",              // e.g. "EGP", "USD", "EUR", "SAR"
+  currencyAr: "ج.م",            // currency shown when the site is in Arabic
   currencyPosition: "after",   // "before" → $25   |  "after" → 25 EGP
 
   // Orders are sent here — no payment fees, no backend.

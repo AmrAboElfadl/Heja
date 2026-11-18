@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -42,26 +42,37 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="announce" id="announce"></div>
+  <div class="announce"><div class="announce-track" id="announce"></div></div>
 
   <header class="header">
     <div class="container header-inner">
+      <button class="icon-btn menu-btn" id="menuOpen" data-i18n-aria="nav.menu" aria-label="Menu">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
       <a href="#" class="logo" aria-label="Heja home">heja<span>.</span></a>
       <nav class="nav" aria-label="Main">
-        <a href="#shop" data-filter="All">Shop</a>
-        <a href="#shop" data-filter="Women">Women</a>
-        <a href="#shop" data-filter="Men">Men</a>
-        <a href="#shop" data-filter="Kids">Kids</a>
-        <a href="#about">About</a>
+        <a href="#shop" data-go="all" data-i18n="nav.shop">Shop all</a>
+        <a href="#shop" data-go="new" data-i18n="nav.new">New in</a>
+        <a href="#shop" data-go="Women" data-i18n="nav.women">Women</a>
+        <a href="#shop" data-go="Men" data-i18n="nav.men">Men</a>
+        <a href="#shop" data-go="Kids" data-i18n="nav.kids">Kids</a>
+        <a href="#shop" data-go="sale" class="nav-sale" data-i18n="nav.sale">Sale</a>
       </nav>
-      <button class="cart-btn" id="cartOpen" aria-label="Open cart">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 7h12l-1 13H7L6 7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>
-        <span class="cart-count" id="cartCount">0</span>
-      </button>
+      <div class="header-actions">
+        <button class="lang-btn" data-lang-toggle data-i18n="lang.switch">العربية</button>
+        <button class="icon-btn" id="favOpen" data-i18n-aria="filter.favs" aria-label="Favourites">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>
+          <span class="count" id="favCount" hidden>0</span>
+        </button>
+        <button class="icon-btn" id="cartOpen" data-i18n-aria="cart.title" aria-label="Cart">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 7h12l-1 13H7L6 7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>
+          <span class="count" id="cartCount">0</span>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -69,12 +80,12 @@
     <section class="hero">
       <div class="container hero-inner">
         <div class="hero-text">
-          <p class="eyebrow">New season · 2026</p>
-          <h1>Clothes that keep up with you.</h1>
-          <p class="lead" id="tagline"></p>
+          <p class="eyebrow" data-i18n="hero.eyebrow">New season · 2026</p>
+          <h1 data-i18n="hero.title">Clothes that keep up with you.</h1>
+          <p class="lead" data-i18n="hero.tagline">Everyday clothes, made to move with you.</p>
           <div class="hero-cta">
-            <a href="#shop" class="btn btn-primary">Shop the collection</a>
-            <a href="#about" class="btn btn-ghost">Our story</a>
+            <a href="#shop" class="btn btn-primary" data-go="all" data-i18n="hero.shop">Shop the collection</a>
+            <a href="#shop" class="btn btn-ghost" data-go="sale" data-i18n="hero.sale">Shop sale</a>
           </div>
         </div>
         <div class="hero-art" aria-hidden="true">
@@ -87,78 +98,200 @@
 
     <section class="perks">
       <div class="container perks-inner">
-        <div><strong>Easy ordering</strong><span>Order in a few taps over WhatsApp</span></div>
-        <div><strong>Cash on delivery</strong><span>Pay when your order arrives</span></div>
-        <div><strong>Free exchanges</strong><span>Wrong size? We'll swap it</span></div>
+        <div><strong data-i18n="perk1.t">Easy ordering</strong><span data-i18n="perk1.s">Order in a few taps over WhatsApp</span></div>
+        <div><strong data-i18n="perk2.t">Cash on delivery</strong><span data-i18n="perk2.s">Pay when your order arrives</span></div>
+        <div><strong data-i18n="perk3.t">Free exchanges</strong><span data-i18n="perk3.s">Wrong size? We'll swap it within 14 days</span></div>
       </div>
     </section>
 
     <section class="shop" id="shop">
       <div class="container">
         <div class="shop-head">
-          <h2>Shop</h2>
+          <h2 data-i18n="shop.title">Shop</h2>
           <div class="shop-tools">
-            <input type="search" id="search" placeholder="Search products…" aria-label="Search products">
-            <select id="sort" aria-label="Sort products">
-              <option value="featured">Featured</option>
-              <option value="price-asc">Price: low to high</option>
-              <option value="price-desc">Price: high to low</option>
-              <option value="name">Name A–Z</option>
+            <input type="search" id="search" data-i18n-ph="shop.search" placeholder="Search products…" aria-label="Search">
+            <select id="sort" aria-label="Sort">
+              <option value="featured" data-i18n="sort.featured">Featured</option>
+              <option value="new" data-i18n="sort.new">Newest</option>
+              <option value="price-asc" data-i18n="sort.priceAsc">Price: low to high</option>
+              <option value="price-desc" data-i18n="sort.priceDesc">Price: high to low</option>
+              <option value="name" data-i18n="sort.name">Name A–Z</option>
             </select>
           </div>
         </div>
-        <div class="filters" id="filters" role="tablist"></div>
+        <div class="filters" id="filters"></div>
+        <div class="filter-bar">
+          <select id="sizeFilter" aria-label="Size"></select>
+          <label class="price-filter"><span id="priceLabel"></span>
+            <input type="range" id="priceFilter" min="0" max="1000" step="50" aria-label="Max price">
+          </label>
+          <span class="result-count" id="resultCount"></span>
+          <button class="link-btn" id="clearFilters" data-i18n="filter.clear" hidden>Clear filters</button>
+        </div>
         <div class="grid" id="grid"></div>
-        <p class="empty" id="empty" hidden>No products match your search.</p>
+        <p class="empty" id="empty" hidden></p>
         <noscript><p>Heja sells everyday clothes for men, women and kids: cotton tees, linen shirts, hoodies, wide-leg trousers, midi dresses, denim jackets, skirts, cargo pants, kids' clothing and caps. Please enable JavaScript to browse the shop and order.</p></noscript>
+
+        <div class="recent" id="recent" hidden>
+          <h3 data-i18n="recent.title">Recently viewed</h3>
+          <div class="mini-row" id="recentRow"></div>
+        </div>
       </div>
     </section>
 
     <section class="about" id="about">
       <div class="container about-inner">
         <div>
-          <h2>About Heja</h2>
-          <p>Heja means “go on!”, the cheer you give a friend who's moving forward. We make simple, well-made clothes for everyday life: soft fabrics, easy fits and colours that go with everything.</p>
-          <p>Every piece is checked by hand before it ships. If something isn't right, message us and we'll make it right.</p>
+          <h2 data-i18n="about.title">About Heja</h2>
+          <p data-i18n="about.p1"></p>
+          <p data-i18n="about.p2"></p>
         </div>
         <div class="contact-card">
-          <h3>Get in touch</h3>
-          <p>Questions about sizes or orders? We usually reply within a few hours.</p>
-          <a class="btn btn-primary" id="waContact" target="_blank" rel="noopener">Chat on WhatsApp</a>
+          <h3 data-i18n="contact.title">Get in touch</h3>
+          <p data-i18n="contact.p"></p>
+          <a class="btn btn-primary" id="waContact" target="_blank" rel="noopener" data-i18n="contact.wa">Chat on WhatsApp</a>
           <a class="link" id="mailContact"></a>
         </div>
+      </div>
+    </section>
+
+    <section class="newsletter">
+      <div class="container news-inner">
+        <div>
+          <h2 data-i18n="news.title">Get 10% off your first order</h2>
+          <p data-i18n="news.p"></p>
+        </div>
+        <form id="newsForm" class="news-form">
+          <input type="email" name="email" required autocomplete="email" data-i18n-ph="news.ph" placeholder="Your email address" aria-label="Email">
+          <button class="btn btn-primary" type="submit" data-i18n="news.btn">Sign up</button>
+        </form>
+        <p class="news-msg" id="newsMsg" role="status"></p>
       </div>
     </section>
   </main>
 
   <footer class="footer">
-    <div class="container footer-inner">
-      <div class="logo">heja<span>.</span></div>
-      <div class="social" id="social"></div>
-      <p class="small">© <span id="year"></span> Heja. All rights reserved.</p>
+    <div class="container footer-grid">
+      <div>
+        <div class="logo">heja<span>.</span></div>
+        <p class="small" data-i18n="footer.pay">We accept cash on delivery</p>
+        <div class="social" id="social"></div>
+      </div>
+      <div>
+        <h4 data-i18n="footer.shop">Shop</h4>
+        <a href="#shop" data-go="new" data-i18n="nav.new">New in</a>
+        <a href="#shop" data-go="Women" data-i18n="nav.women">Women</a>
+        <a href="#shop" data-go="Men" data-i18n="nav.men">Men</a>
+        <a href="#shop" data-go="Kids" data-i18n="nav.kids">Kids</a>
+        <a href="#shop" data-go="sale" data-i18n="nav.sale">Sale</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.help">Help</h4>
+        <a href="#" data-open="track" data-i18n="nav.track">Track order</a>
+        <a href="#" data-open="sizes" data-i18n="footer.sizes">Size guide</a>
+        <a href="help.html#shipping" data-i18n="footer.shipping">Shipping & delivery</a>
+        <a href="help.html#returns" data-i18n="footer.returns">Returns & exchanges</a>
+        <a href="help.html#faq" data-i18n="footer.faq">FAQ</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.about">Heja</h4>
+        <a href="#about" data-i18n="nav.about">About</a>
+        <a href="help.html#contact" data-i18n="footer.contact">Contact us</a>
+        <a href="help.html#privacy" data-i18n="footer.privacy">Privacy policy</a>
+        <a href="help.html#terms" data-i18n="footer.terms">Terms of sale</a>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <p class="small">© <span id="year"></span> Heja. <span data-i18n="footer.rights">All rights reserved.</span></p>
+      <button class="lang-btn" data-lang-toggle data-i18n="lang.switch">العربية</button>
     </div>
   </footer>
+
+  <!-- Mobile menu -->
+  <div class="overlay drawer-overlay start" id="menuOverlay" hidden>
+    <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="menuTitle">
+      <div class="drawer-head"><h3 id="menuTitle" class="logo">heja<span>.</span></h3><button class="close" data-close data-i18n-aria="close" aria-label="Close">×</button></div>
+      <nav class="drawer-body mobile-nav">
+        <a href="#shop" data-go="all" data-i18n="nav.shop">Shop all</a>
+        <a href="#shop" data-go="new" data-i18n="nav.new">New in</a>
+        <a href="#shop" data-go="Women" data-i18n="nav.women">Women</a>
+        <a href="#shop" data-go="Men" data-i18n="nav.men">Men</a>
+        <a href="#shop" data-go="Kids" data-i18n="nav.kids">Kids</a>
+        <a href="#shop" data-go="Accessories" data-i18n="cat.Accessories">Accessories</a>
+        <a href="#shop" data-go="sale" class="nav-sale" data-i18n="nav.sale">Sale</a>
+        <hr>
+        <a href="#shop" data-go="favs" data-i18n="filter.favs">Favourites</a>
+        <a href="#" data-open="track" data-i18n="nav.track">Track order</a>
+        <a href="#" data-open="sizes" data-i18n="footer.sizes">Size guide</a>
+        <a href="help.html" data-i18n="nav.help">Help</a>
+        <a href="#about" data-i18n="nav.about">About</a>
+        <button class="lang-btn" data-lang-toggle data-i18n="lang.switch">العربية</button>
+      </nav>
+    </aside>
+  </div>
 
   <!-- Product modal -->
   <div class="overlay" id="productOverlay" hidden>
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="pmName">
-      <button class="close" data-close aria-label="Close">×</button>
+      <button class="close" data-close data-i18n-aria="close" aria-label="Close">×</button>
       <div class="modal-media" id="pmMedia"></div>
       <div class="modal-body">
         <p class="eyebrow" id="pmCat"></p>
-        <h3 id="pmName"></h3>
+        <div class="pm-title-row">
+          <h3 id="pmName"></h3>
+          <button class="heart lg" id="pmFav" aria-pressed="false"></button>
+        </div>
         <p class="price" id="pmPrice"></p>
         <p id="pmDesc"></p>
-        <p class="label">Size</p>
+        <div class="size-head"><p class="label" data-i18n="pm.size">Size</p><button class="link-btn" data-open="sizes" data-i18n="pm.sizeGuide">Size guide</button></div>
         <div class="sizes" id="pmSizes"></div>
         <div class="qty-row">
           <div class="qty">
-            <button type="button" id="pmMinus" aria-label="Decrease">−</button>
+            <button type="button" id="pmMinus" aria-label="−">−</button>
             <span id="pmQty">1</span>
-            <button type="button" id="pmPlus" aria-label="Increase">+</button>
+            <button type="button" id="pmPlus" aria-label="+">+</button>
           </div>
-          <button class="btn btn-primary grow" id="pmAdd">Add to cart</button>
+          <button class="btn btn-primary grow" id="pmAdd" data-i18n="pm.add">Add to cart</button>
         </div>
+        <p class="small pm-delivery" data-i18n="pm.delivery"></p>
+        <button class="link-btn share-btn" id="pmShare">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M12 3v13M7 8l5-5 5 5"/></svg>
+          <span data-i18n="pm.share">Share</span>
+        </button>
+        <div class="related">
+          <p class="label" data-i18n="pm.related">You may also like</p>
+          <div class="mini-row" id="pmRelated"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Size guide -->
+  <div class="overlay" id="sizesOverlay" hidden>
+    <div class="modal modal-sm" role="dialog" aria-modal="true" aria-labelledby="sgTitle">
+      <button class="close" data-close data-i18n-aria="close" aria-label="Close">×</button>
+      <div class="modal-body">
+        <h3 id="sgTitle" data-i18n="sg.title">Size guide</h3>
+        <p class="label" data-i18n="sg.adults">Adults (cm)</p>
+        <table class="size-table">
+          <thead><tr><th data-i18n="sg.size">Size</th><th data-i18n="sg.chest">Chest</th><th data-i18n="sg.waist">Waist</th><th data-i18n="sg.hips">Hips</th></tr></thead>
+          <tbody>
+            <tr><td>XS</td><td>80–84</td><td>62–66</td><td>86–90</td></tr>
+            <tr><td>S</td><td>86–90</td><td>68–72</td><td>92–96</td></tr>
+            <tr><td>M</td><td>92–96</td><td>74–78</td><td>98–102</td></tr>
+            <tr><td>L</td><td>98–104</td><td>80–86</td><td>104–108</td></tr>
+            <tr><td>XL</td><td>106–112</td><td>88–94</td><td>110–116</td></tr>
+          </tbody>
+        </table>
+        <p class="label" data-i18n="sg.kids">Kids</p>
+        <table class="size-table">
+          <thead><tr><th data-i18n="sg.size">Size</th><th data-i18n="sg.height">Height</th></tr></thead>
+          <tbody>
+            <tr><td>2Y</td><td>86–92</td></tr><tr><td>4Y</td><td>98–104</td></tr>
+            <tr><td>6Y</td><td>110–116</td></tr><tr><td>8Y</td><td>122–128</td></tr>
+          </tbody>
+        </table>
+        <p class="small" data-i18n="sg.note"></p>
       </div>
     </div>
   </div>
@@ -167,60 +300,88 @@
   <div class="overlay drawer-overlay" id="cartOverlay" hidden>
     <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
       <div class="drawer-head">
-        <h3 id="cartTitle">Your cart</h3>
-        <button class="close" data-close aria-label="Close">×</button>
+        <h3 id="cartTitle" data-i18n="cart.title">Your cart</h3>
+        <button class="close" data-close data-i18n-aria="close" aria-label="Close">×</button>
+      </div>
+      <div class="ship-progress" id="shipProgress" hidden>
+        <p id="shipNote"></p>
+        <div class="bar"><span id="shipBar"></span></div>
       </div>
       <div class="drawer-body" id="cartItems"></div>
       <div class="drawer-foot" id="cartFoot">
-        <div class="row"><span>Subtotal</span><span id="cartSubtotal"></span></div>
-        <div class="row"><span>Shipping</span><span id="cartShipping"></span></div>
-        <div class="row total"><span>Total</span><span id="cartTotal"></span></div>
-        <p class="small" id="shipNote"></p>
-        <button class="btn btn-primary full" id="checkoutBtn">Checkout</button>
+        <form class="promo" id="promoForm">
+          <input name="code" data-i18n-ph="promo.ph" placeholder="Promo code" aria-label="Promo code" autocomplete="off">
+          <button class="btn btn-ghost" type="submit" data-i18n="promo.apply">Apply</button>
+        </form>
+        <p class="promo-applied" id="promoApplied" hidden><span id="promoText"></span> <button class="link-btn" id="promoRemove" data-i18n="promo.remove">Remove code</button></p>
+        <div class="row"><span data-i18n="cart.subtotal">Subtotal</span><span id="cartSubtotal"></span></div>
+        <div class="row discount" id="discountRow" hidden><span id="discountLabel"></span><span id="cartDiscount"></span></div>
+        <div class="row"><span data-i18n="cart.shipping">Shipping</span><span id="cartShipping"></span></div>
+        <div class="row total"><span data-i18n="cart.total">Total</span><span id="cartTotal"></span></div>
+        <button class="btn btn-primary full" id="checkoutBtn" data-i18n="cart.checkout">Checkout</button>
       </div>
     </aside>
   </div>
 
-  <!-- Checkout modal -->
+  <!-- Checkout -->
   <div class="overlay" id="checkoutOverlay" hidden>
     <div class="modal modal-sm" role="dialog" aria-modal="true" aria-labelledby="coTitle">
-      <button class="close" data-close aria-label="Close">×</button>
+      <button class="close" data-close data-i18n-aria="close" aria-label="Close">×</button>
       <div class="modal-body">
-        <h3 id="coTitle">Delivery details</h3>
-        <p class="small">Fill in your details. We'll confirm your order and you pay cash on delivery.</p>
-        <form id="checkoutForm">
-          <label>Full name<input name="name" required autocomplete="name"></label>
-          <label>Phone<input name="phone" type="tel" required autocomplete="tel"></label>
-          <label>City<input name="city" required autocomplete="address-level2"></label>
-          <label>Address<textarea name="address" rows="2" required autocomplete="street-address"></textarea></label>
-          <label>Notes (optional)<input name="notes"></label>
-          <button type="submit" class="btn btn-primary full" data-via="whatsapp">Send order on WhatsApp</button>
-          <button type="submit" class="btn btn-ghost full" data-via="email">Send order by email</button>
+        <h3 id="coTitle" data-i18n="co.title">Delivery details</h3>
+        <p class="small" data-i18n="co.sub"></p>
+        <form id="checkoutForm" class="stack-form">
+          <label><span data-i18n="co.name">Full name</span><input name="name" required autocomplete="name" maxlength="120"></label>
+          <label><span data-i18n="co.phone">Phone</span><input name="phone" type="tel" required autocomplete="tel" maxlength="40"></label>
+          <label><span data-i18n="co.city">City</span><input name="city" required autocomplete="address-level2" maxlength="80"></label>
+          <label><span data-i18n="co.address">Address</span><textarea name="address" rows="2" required autocomplete="street-address" maxlength="400"></textarea></label>
+          <label><span data-i18n="co.notes">Notes (optional)</span><input name="notes" maxlength="400"></label>
+          <p class="co-total" id="coTotal"></p>
+          <button type="submit" class="btn btn-primary full" data-via="whatsapp" data-i18n="co.wa">Place order & send on WhatsApp</button>
+          <button type="submit" class="btn btn-ghost full" data-via="email" data-i18n="co.email">Place order & send by email</button>
         </form>
       </div>
     </div>
   </div>
 
+  <!-- Track order -->
+  <div class="overlay" id="trackOverlay" hidden>
+    <div class="modal modal-sm" role="dialog" aria-modal="true" aria-labelledby="trTitle">
+      <button class="close" data-close data-i18n-aria="close" aria-label="Close">×</button>
+      <div class="modal-body">
+        <h3 id="trTitle" data-i18n="track.title">Track your order</h3>
+        <p class="small" data-i18n="track.sub"></p>
+        <form id="trackForm" class="stack-form">
+          <label><span data-i18n="track.no">Order number</span><input name="no" required placeholder="HJ-XXXXXX" autocomplete="off"></label>
+          <label><span data-i18n="track.phone">Phone</span><input name="phone" type="tel" required autocomplete="tel"></label>
+          <button type="submit" class="btn btn-primary full" data-i18n="track.btn">Track</button>
+        </form>
+        <div class="track-result" id="trackResult" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- AI assistant -->
-  <button class="chat-fab" id="chatOpen" aria-label="Ask the Heja style assistant" hidden>
+  <button class="chat-fab" id="chatOpen" hidden>
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v11H9l-5 4V5z"/></svg>
-    <span>Ask Heja</span>
+    <span data-i18n="chat.fab">Ask Heja</span>
   </button>
-  <section class="chat" id="chatPanel" hidden aria-label="Heja style assistant">
+  <section class="chat" id="chatPanel" hidden aria-labelledby="chatTitle">
     <div class="chat-head">
-      <div><strong>Heja style assistant</strong><span class="small">Sizes, outfits, gift ideas</span></div>
-      <button class="close" id="chatClose" aria-label="Close assistant">×</button>
+      <div><strong id="chatTitle" data-i18n="chat.title">Heja style assistant</strong><span class="small" data-i18n="chat.sub">Sizes, outfits, gift ideas</span></div>
+      <button class="close" id="chatClose" data-i18n-aria="close" aria-label="Close">×</button>
     </div>
     <div class="chat-log" id="chatLog" aria-live="polite"></div>
     <form class="chat-form" id="chatForm">
-      <input id="chatInput" placeholder="Ask anything… / اسأل أي سؤال" autocomplete="off" maxlength="800" aria-label="Your question">
-      <button class="btn btn-primary" type="submit" aria-label="Send">Send</button>
+      <input id="chatInput" data-i18n-ph="chat.ph" placeholder="Ask anything…" autocomplete="off" maxlength="800" aria-label="Message">
+      <button class="btn btn-primary" type="submit" data-i18n="chat.send">Send</button>
     </form>
   </section>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="config.js"></script>
+  <script src="i18n.js"></script>
   <script src="products.js"></script>
   <script src="app.js"></script>
 </body>
