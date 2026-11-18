@@ -193,3 +193,7 @@ Object.assign(window.HEJA_I18N.fa, {
   "consent.more": "حریم خصوصی",
   "social.follow": "هێژا را دنبال کنید"
 });
+
+Object.assign(window.HEJA_I18N.en, { "rc.view": "View your receipt" });
+Object.assign(window.HEJA_I18N.ar, { "rc.view": "اعرض الإيصال" });
+Object.assign(window.HEJA_I18N.fa, { "rc.view": "مشاهده‌ی رسید" });

@@ -946,7 +946,10 @@
       $("#shipBar").style.width = `${Math.min(100, (t0.subtotal / CFG.freeShippingOver) * 100)}%`;
     }
     if (!lines.length) {
-      $("#cartItems").innerHTML = `<div class="cart-empty"><p>${esc(t("cart.empty"))}</p><a href="#shop" class="btn btn-ghost" data-close>${esc(t("cart.start"))}</a></div>`;
+      const last = store.get("heja-last-receipt", null);
+      const recent = last && Date.now() - last.at < 24 * 3600 * 1000;
+      $("#cartItems").innerHTML = `<div class="cart-empty"><p>${esc(t("cart.empty"))}</p><a href="#shop" class="btn btn-ghost" data-close>${esc(t("cart.start"))}</a>
+        ${recent ? `<p class="last-receipt">${esc(t("rc.order"))} <strong>${esc(last.order.no)}</strong> · <button type="button" class="link-btn" id="lastReceipt">${esc(t("rc.view"))}</button></p>` : ""}</div>`;
       return;
     }
     $("#cartItems").innerHTML = cart.map((l, i) => {
@@ -1101,6 +1104,7 @@
     } else if (tab) tab.location.href = waUrl;
     track("order_placed", null, { order_no: order.no, total: Number(order.total), items: order.lines.length });
     flush();
+    store.set("heja-last-receipt", { at: Date.now(), order, d, msg, waUrl });
     showReceipt(order, d, msg, waUrl);
 
     cart = []; save();
@@ -1132,6 +1136,14 @@
     };
   }
   $("#rcWa").addEventListener("click", () => track("whatsapp", null, { from: "receipt" }));
+  $("#cartItems").addEventListener("click", (e) => {
+    if (e.target.id !== "lastReceipt") return;
+    const last = store.get("heja-last-receipt", null);
+    if (!last) return;
+    closeOverlay($("#cartOverlay"));
+    showReceipt(last.order, last.d, last.msg, last.waUrl);
+    openOverlay($("#receiptOverlay"));
+  });
 
   // ---------- order tracking ----------
   $("#trackForm").addEventListener("submit", async (e) => {

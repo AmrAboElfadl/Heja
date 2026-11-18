@@ -653,3 +653,5 @@ html[lang="fa"] .hero.has-video h1 { max-width: 16ch; }
 .consent a { color: var(--muted); }
 .consent-btns { display: flex; gap: 8px; justify-content: flex-end; }
 .consent .btn { padding: .8em 1.4em; }
+
+.last-receipt { margin-top: 24px; font-size: .88rem; color: var(--ink); }
