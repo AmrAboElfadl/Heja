@@ -18,14 +18,22 @@ async function getCatalog() {
   const key = process.env.SUPABASE_ANON_KEY;
   if (!url || !key) return "";
   try {
-    const r = await fetch(
-      `${url}/rest/v1/products?select=name,category,price,old_price,sizes,description&active=eq.true&order=sort_order`,
-      { headers: { apikey: key, Authorization: `Bearer ${key}` } }
-    );
+    const headers = { apikey: key, Authorization: `Bearer ${key}` };
+    const [r, vr] = await Promise.all([
+      fetch(`${url}/rest/v1/products?select=id,name,category,price,old_price,sizes,description,fabric,fit&active=eq.true&order=sort_order`, { headers }),
+      fetch(`${url}/rest/v1/product_variants?select=product_id,color,size,stock`, { headers })
+    ]);
     if (!r.ok) return catalogCache.text;
     const rows = await r.json();
+    const variants = vr.ok ? await vr.json() : [];
+    const inStock = (id) => {
+      const byColour = {};
+      variants.filter((v) => v.product_id === id && v.stock > 0).forEach((v) => { (byColour[v.color] = byColour[v.color] || []).push(v.size); });
+      const parts = Object.entries(byColour).map(([c, s]) => `${c} (${s.join("/")})`);
+      return parts.length ? `in stock: ${parts.join(", ")}` : "currently sold out";
+    };
     const text = rows
-      .map((p) => `- ${p.name} (${p.category}): ${p.price}${p.old_price ? ` (was ${p.old_price})` : ""}; sizes ${p.sizes.join("/")}. ${p.description}`)
+      .map((p) => `- ${p.name} (${p.category}): ${p.price}${p.old_price ? ` (was ${p.old_price})` : ""}; ${p.fit ? p.fit + " fit; " : ""}${p.fabric ? p.fabric + " " : ""}${inStock(p.id)}. ${p.description}`)
       .join("\n");
     catalogCache = { text, at: Date.now() };
     return text;
@@ -59,7 +67,7 @@ export default async function handler(req, res) {
     "You are the friendly shopping assistant for Heja, an online clothing store.",
     "Help customers pick products, sizes and outfits. Keep answers short (2-4 sentences), warm and practical.",
     "Reply in the same language the customer writes in (Arabic or English).",
-    "Only recommend products from the catalog below and never invent prices, stock or discounts.",
+    "Only recommend products from the catalog below and never invent prices, stock or discounts. Only suggest colours and sizes listed as in stock.",
     "Ordering: customers add items to the cart and check out; orders are confirmed on WhatsApp and paid cash on delivery.",
     "If you don't know something (e.g. delivery time to a specific area), suggest contacting Heja on WhatsApp.",
     currency ? `Prices are in ${currency}.` : "",

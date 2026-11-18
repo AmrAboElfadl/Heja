@@ -57,6 +57,14 @@ Browser ──► Vercel (index.html, app.js …)
 - `subscribers`: newsletter sign-ups (export as CSV from the Table Editor).
 - `products.name_ar` / `description_ar`: Arabic text shown when visitors switch to Arabic.
 - Order tracking: customers enter their order number + phone; they see the `status` you set on the order.
+- `product_variants`: **colours and stock**: one row per product + colour + size. Set `stock` to what you have;
+  0 shows "Sold out", 1–3 shows "Only N left". Stock goes down automatically with every order.
+- `orders.status` = `cancelled` puts that order's pieces back in stock automatically.
+- `orders.tracking_url`: paste the courier's tracking link; the customer sees a "Track with courier" button.
+- `reviews`: new reviews arrive hidden. Tick `approved` to show one on the site.
+- `restock_requests`: emails of customers waiting for a sold-out size. Email them when it's back.
+- `return_requests`: exchange and return requests (reference RT-…). Update `status` as you handle them.
+- `products.fabric`, `care` (+ `_ar`) and `fit`: the "Fabric & care" section on each product.
 - Photos: Storage → `product-images` → upload, copy the public URL into the product's `image`.
 
 ### 2. OpenRouter

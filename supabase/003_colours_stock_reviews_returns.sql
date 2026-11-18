@@ -1,0 +1,14 @@
+-- ============================================================
+--  HEJA — update 3: colours + stock per size, reviews, back-in-stock,
+--  returns, fabric & care, courier tracking. (Already applied to the live project.)
+--
+--  Manage in Supabase → Table Editor:
+--    product_variants : one row per product + colour + size; edit `stock`
+--    reviews          : tick `approved` to publish a review
+--    restock_requests : emails waiting for a size to come back
+--    return_requests  : exchanges / returns customers asked for
+--    orders.tracking_url : paste the courier tracking link (https://…)
+--    Setting an order's status to 'cancelled' puts its pieces back in stock.
+-- ============================================================
+-- Full SQL: see the migrations 'heja_colours_stock_reviews_returns' and 'heja_close_old_checkout_functions'
+-- in Supabase → Database → Migrations. The website uses place_order_v2 and track_order_v2.

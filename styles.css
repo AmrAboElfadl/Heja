@@ -507,3 +507,99 @@ html[lang="ar"] .chat-fab { letter-spacing: 0; font-size: .85rem; }
 .heja-story span { font-family: var(--font); }
 
 .footer .logo { justify-self: start; padding-inline-start: 0; }
+
+/* =========================================================
+   Colours, stock, size finder, reviews, returns, search
+   ========================================================= */
+/* Search suggestions */
+.search-wrap { position: relative; display: flex; }
+.search-wrap input { flex: 1; }
+.suggest { position: absolute; top: calc(100% + 4px); inset-inline: 0; z-index: 15; list-style: none; margin: 0; padding: 4px 0; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); }
+.suggest button { width: 100%; display: flex; justify-content: space-between; gap: 12px; padding: .6em 1em; background: none; border: 0; text-align: start; font-size: .9rem; }
+.suggest button:hover, .suggest button:focus-visible { background: var(--greige); outline: none; }
+.suggest small { color: var(--muted); white-space: nowrap; }
+.filter-bar #colorFilter { padding: .5em .9em; border: 1px solid var(--line); background: var(--surface); }
+
+/* Card: colour dots, rating, sold out */
+.swatches { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+.swatches i { width: 10px; height: 10px; border-radius: 50%; border: 1px solid rgba(0, 0, 0, .15); display: inline-block; }
+.swatches i.gone { opacity: .35; }
+.swatches small { font-size: .72rem; color: var(--muted); }
+.card-rating { margin: 4px 0 0; font-size: .8rem; color: var(--muted); }
+.stars { color: var(--ink); letter-spacing: .08em; font-size: .85rem; }
+.badge.out { color: var(--ink); }
+.card.is-out .card-media svg, .card.is-out .card-media img { opacity: .45; }
+
+/* Product: colour swatches */
+.pm-colors .label { margin-bottom: .6em; }
+.opt-value { font-weight: 400; color: var(--muted); }
+.swatch-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.swatch { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); padding: 3px; position: relative; }
+.swatch i { display: block; width: 100%; height: 100%; border-radius: 50%; border: 1px solid rgba(0, 0, 0, .12); }
+.swatch[aria-checked="true"] { border: 1.5px solid var(--ink); }
+.swatch.gone::after { content: ""; position: absolute; left: 50%; top: 3px; bottom: 3px; width: 1.5px; background: var(--ink); transform: rotate(45deg); }
+.size-links { display: inline-flex; gap: 16px; }
+
+/* Sizes: sold out */
+.size.out { color: var(--muted); text-decoration: line-through; border-style: dashed; }
+.size.out.active { background: var(--greige); color: var(--ink); border-color: var(--ink); }
+.stock-note { margin: 10px 0 0; font-size: .85rem; min-height: 1.2em; }
+.stock-note.low { color: var(--accent); }
+.stock-note.out { color: var(--muted); }
+
+/* Size finder */
+.finder { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 12px; padding: 14px; background: var(--greige); }
+.finder label { display: flex; flex-direction: column; gap: 4px; font-size: .78rem; font-weight: 500; }
+.finder input, .finder select { padding: .55em .7em; border: 1px solid var(--line); background: var(--surface); min-width: 0; }
+.finder .btn { grid-column: 1 / -1; padding: .9em; }
+.finder-out { grid-column: 1 / -1; margin: 0; font-size: .9rem; font-weight: 500; }
+.finder-out:empty { display: none; }
+
+/* Notify me */
+.notify { margin-top: 12px; padding: 14px; border: 1px solid var(--line); }
+.notify p { margin: 0 0 10px; }
+.notify-row { display: flex; gap: 8px; }
+.notify-row input { flex: 1; min-width: 0; padding: .7em .9em; border: 1px solid var(--line); }
+.notify-row .btn { padding: .9em 1.2em; }
+
+/* Fabric & care */
+.pm-details { margin-top: 14px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.pm-details summary { cursor: pointer; padding: 12px 0; font-size: .74rem; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; list-style: none; display: flex; justify-content: space-between; }
+.pm-details summary::-webkit-details-marker { display: none; }
+.pm-details summary::after { content: "+"; font-size: 1rem; letter-spacing: 0; }
+.pm-details[open] summary::after { content: "−"; }
+.pm-details p { margin: 0 0 10px; font-size: .9rem; }
+.pm-details p:empty { display: none; }
+html[lang="ar"] .pm-details summary { letter-spacing: 0; font-size: .9rem; text-transform: none; }
+
+/* Reviews */
+.reviews { margin-top: 24px; border-top: 1px solid var(--line); }
+.rev-head { display: flex; justify-content: space-between; align-items: baseline; }
+.rev-sum { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; margin: 0 0 8px; }
+.rev-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.rev-list li { border-top: 1px solid var(--line); padding-top: 10px; font-size: .9rem; }
+.rev-list p { margin: 0 0 4px; }
+.rev-form { margin-top: 12px; padding: 14px; background: var(--greige); }
+.rev-form fieldset { border: 0; padding: 0; margin: 0; }
+.rev-form legend { font-size: .85rem; font-weight: 600; margin-bottom: 4px; }
+.stars-input { display: flex; flex-direction: row-reverse; justify-content: flex-end; gap: 2px; flex-wrap: wrap; }
+.stars-input legend { width: 100%; }
+.stars-input input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.stars-input label { font-size: 1.6rem; color: #c9c2b8; cursor: pointer; line-height: 1; }
+.stars-input input:checked ~ label, .stars-input label:hover, .stars-input label:hover ~ label { color: var(--ink); }
+.stars-input input:focus-visible + label { outline: 2px solid var(--firuzeh); }
+html[dir="rtl"] .stars-input { flex-direction: row-reverse; }
+.fit-input { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+.fit-input label { font-weight: 400; display: inline-flex; align-items: center; gap: 6px; font-size: .9rem; flex-direction: row; }
+.rev-msg { margin: 8px 0 0; font-size: .88rem; min-height: 1em; }
+
+/* Tap to zoom */
+.modal-media { overflow: hidden; cursor: zoom-in; }
+.modal-media svg, .modal-media img { transition: transform .35s ease; transform-origin: var(--zx, 50%) var(--zy, 50%); }
+.modal-media.zoomed { cursor: zoom-out; }
+.modal-media.zoomed svg, .modal-media.zoomed img { transform: scale(2); }
+
+@media (max-width: 560px) {
+  .finder { grid-template-columns: 1fr 1fr; }
+  .finder label:nth-child(3) { grid-column: 1 / -1; }
+}

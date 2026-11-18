@@ -28,6 +28,7 @@
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="assets/favicon-32.png" sizes="32x32" type="image/png">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -125,7 +126,10 @@
         <div class="shop-head">
           <h2 class="with-boteh"><svg class="boteh" aria-hidden="true" focusable="false"><use href="#boteh"/></svg><span data-i18n="shop.title">Shop</span></h2>
           <div class="shop-tools">
-            <input type="search" id="search" data-i18n-ph="shop.search" placeholder="Search products…" aria-label="Search">
+            <div class="search-wrap">
+              <input type="search" id="search" data-i18n-ph="shop.search" placeholder="Search products…" aria-label="Search" autocomplete="off" aria-controls="searchSuggest" aria-expanded="false">
+              <ul class="suggest" id="searchSuggest" role="listbox" hidden></ul>
+            </div>
             <select id="sort" aria-label="Sort">
               <option value="featured" data-i18n="sort.featured">Featured</option>
               <option value="new" data-i18n="sort.new">Newest</option>
@@ -138,6 +142,7 @@
         <div class="filters" id="filters"></div>
         <div class="filter-bar">
           <select id="sizeFilter" aria-label="Size"></select>
+          <select id="colorFilter" aria-label="Colour"></select>
           <label class="price-filter"><span id="priceLabel"></span>
             <input type="range" id="priceFilter" min="0" max="1000" step="50" aria-label="Max price">
           </label>
@@ -208,6 +213,7 @@
         <a href="#" data-open="track" data-i18n="nav.track">Track order</a>
         <a href="#" data-open="sizes" data-i18n="footer.sizes">Size guide</a>
         <a href="help.html#shipping" data-i18n="footer.shipping">Shipping & delivery</a>
+        <a href="#" data-open="returns" data-i18n="ret.start">Start a return</a>
         <a href="help.html#returns" data-i18n="footer.returns">Returns & exchanges</a>
         <a href="help.html#faq" data-i18n="footer.faq">FAQ</a>
       </div>
@@ -260,8 +266,23 @@
         </div>
         <p class="price" id="pmPrice"></p>
         <p id="pmDesc"></p>
-        <div class="size-head"><p class="label" data-i18n="pm.size">Size</p><button class="link-btn" data-open="sizes" data-i18n="pm.sizeGuide">Size guide</button></div>
+        <div class="pm-colors" id="pmColorBlock" hidden>
+          <p class="label"><span data-i18n="pm.colour">Colour</span>: <span id="pmColorName" class="opt-value"></span></p>
+          <div class="swatch-row" id="pmColors" role="radiogroup"></div>
+        </div>
+        <div class="size-head"><p class="label" data-i18n="pm.size">Size</p>
+          <span class="size-links"><button type="button" class="link-btn" id="finderToggle" data-i18n="finder.open">Find my size</button><button class="link-btn" data-open="sizes" data-i18n="pm.sizeGuide">Size guide</button></span>
+        </div>
+        <form class="finder" id="finder" hidden>
+          <label><span data-i18n="finder.height">Height (cm)</span><input name="h" id="finderH" type="number" min="120" max="210" required inputmode="numeric"></label>
+          <label><span data-i18n="finder.weight">Weight (kg)</span><input name="w" id="finderW" type="number" min="30" max="180" required inputmode="numeric"></label>
+          <label><span data-i18n="finder.pref">Fit you like</span>
+            <select name="pref" id="finderPref"><option value="snug" data-i18n="finder.snug">Close to the body</option><option value="regular" selected data-i18n="finder.regular">Regular</option><option value="loose" data-i18n="finder.loose">Loose</option></select></label>
+          <button class="btn btn-ghost" type="submit" data-i18n="finder.go">Get my size</button>
+          <p class="finder-out" id="finderOut" aria-live="polite"></p>
+        </form>
         <div class="sizes" id="pmSizes"></div>
+        <p class="stock-note" id="pmStock" aria-live="polite"></p>
         <div class="fit-box" id="pmFit"></div>
         <div class="qty-row">
           <div class="qty">
@@ -271,11 +292,43 @@
           </div>
           <button class="btn btn-primary grow" id="pmAdd" data-i18n="pm.add">Add to cart</button>
         </div>
+        <form class="notify" id="pmNotify" hidden>
+          <p class="small" id="pmNotifyText"></p>
+          <div class="notify-row"><input type="email" name="email" id="notifyEmail" required autocomplete="email" data-i18n-ph="news.ph" placeholder="Your email address" aria-label="Email">
+          <button class="btn btn-primary" type="submit" data-i18n="notify.btn">Notify me</button></div>
+        </form>
         <p class="small pm-delivery" data-i18n="pm.delivery"></p>
+        <details class="pm-details" id="pmDetails">
+          <summary data-i18n="pm.fabric">Fabric &amp; care</summary>
+          <p id="pmFitLine"></p><p id="pmFabricText"></p><p id="pmCareText"></p>
+        </details>
         <button class="link-btn share-btn" id="pmShare">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M12 3v13M7 8l5-5 5 5"/></svg>
           <span data-i18n="pm.share">Share</span>
         </button>
+        <section class="reviews" id="pmReviews" aria-labelledby="revTitle">
+          <div class="rev-head"><p class="label" id="revTitle" data-i18n="rev.title">Reviews</p><button type="button" class="link-btn" id="revWrite" data-i18n="rev.write">Write a review</button></div>
+          <div id="revSummary"></div>
+          <ul class="rev-list" id="revList"></ul>
+          <form class="rev-form stack-form" id="revForm" hidden>
+            <fieldset class="stars-input"><legend data-i18n="rev.rating">Your rating</legend>
+              <input type="radio" name="rating" id="r5" value="5" required><label for="r5" aria-label="5">★</label>
+              <input type="radio" name="rating" id="r4" value="4"><label for="r4" aria-label="4">★</label>
+              <input type="radio" name="rating" id="r3" value="3"><label for="r3" aria-label="3">★</label>
+              <input type="radio" name="rating" id="r2" value="2"><label for="r2" aria-label="2">★</label>
+              <input type="radio" name="rating" id="r1" value="1"><label for="r1" aria-label="1">★</label>
+            </fieldset>
+            <fieldset class="fit-input"><legend data-i18n="rev.fit">How does it fit?</legend>
+              <label><input type="radio" name="fit" value="small" required> <span data-i18n="rev.small">Runs small</span></label>
+              <label><input type="radio" name="fit" value="true"> <span data-i18n="rev.true">True to size</span></label>
+              <label><input type="radio" name="fit" value="large"> <span data-i18n="rev.large">Runs large</span></label>
+            </fieldset>
+            <label><span data-i18n="rev.name">Your name</span><input name="name" id="revName" required maxlength="60" autocomplete="given-name"></label>
+            <label><span data-i18n="rev.comment">Your review</span><textarea name="comment" id="revComment" rows="3" maxlength="800"></textarea></label>
+            <button class="btn btn-primary" type="submit" data-i18n="rev.send">Send review</button>
+          </form>
+          <p class="rev-msg" id="revMsg" role="status"></p>
+        </section>
         <div class="related">
           <p class="label" data-i18n="pm.related">You may also like</p>
           <div class="mini-row" id="pmRelated"></div>
@@ -363,13 +416,43 @@
           <label><span data-i18n="co.notes">Notes (optional)</span><input name="notes" maxlength="400"></label>
           <p class="co-total" id="coTotal"></p>
           <button type="submit" class="btn btn-primary full" data-via="whatsapp" data-i18n="co.wa">Place order & send on WhatsApp</button>
-          <button type="submit" class="btn btn-ghost full" data-via="email" data-i18n="co.email">Place order & send by email</button>
+          <button type="submit" class="btn btn-ghost full" data-via="email" id="emailOrderBtn" data-i18n="co.email">Place order & send by email</button>
         </form>
       </div>
     </div>
   </div>
 
   <!-- Track order -->
+  <div class="overlay" id="returnsOverlay" hidden>
+    <div class="modal modal-sm" role="dialog" aria-modal="true" aria-labelledby="retTitle">
+      <button class="close" data-close data-i18n-aria="close" aria-label="Close">×</button>
+      <div class="modal-body">
+        <h3 id="retTitle" data-i18n="ret.title">Start a return or exchange</h3>
+        <p class="small" data-i18n="ret.sub"></p>
+        <form id="returnForm" class="stack-form">
+          <label><span data-i18n="track.no">Order number</span><input name="no" id="retNo" required placeholder="HJ-XXXXXX" autocomplete="off"></label>
+          <label><span data-i18n="track.phone">Phone</span><input name="phone" id="retPhone" type="tel" required autocomplete="tel"></label>
+          <fieldset class="fit-input"><legend data-i18n="ret.kind">What would you like?</legend>
+            <label><input type="radio" name="kind" value="exchange" checked> <span data-i18n="ret.exchange">Exchange (another size or colour)</span></label>
+            <label><input type="radio" name="kind" value="return"> <span data-i18n="ret.return">Return for a refund</span></label>
+          </fieldset>
+          <label><span data-i18n="ret.reason">Reason</span>
+            <select name="reason" id="retReason" required>
+              <option value="Too small" data-i18n="ret.r1">Too small</option>
+              <option value="Too big" data-i18n="ret.r2">Too big</option>
+              <option value="Not as expected" data-i18n="ret.r3">Not as expected</option>
+              <option value="Faulty or damaged" data-i18n="ret.r4">Faulty or damaged</option>
+              <option value="Wrong item" data-i18n="ret.r5">Wrong item received</option>
+              <option value="Changed my mind" data-i18n="ret.r6">Changed my mind</option>
+            </select></label>
+          <label><span data-i18n="ret.details">Details (optional)</span><textarea name="details" id="retDetails" rows="2" maxlength="600"></textarea></label>
+          <button type="submit" class="btn btn-primary full" data-i18n="ret.send">Send request</button>
+        </form>
+        <div class="track-result" id="returnResult" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+
   <div class="overlay" id="trackOverlay" hidden>
     <div class="modal modal-sm" role="dialog" aria-modal="true" aria-labelledby="trTitle">
       <button class="close" data-close data-i18n-aria="close" aria-label="Close">×</button>
