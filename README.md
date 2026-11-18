@@ -56,6 +56,12 @@ Browser ──► Vercel (index.html, app.js …)
 ### 4. Your details
 Edit `config.js`: WhatsApp number, email, currency and social links.
 
+**Homepage video:** replace `assets/hero.mp4` (and `assets/hero-poster.jpg`, its first frame) with
+your own muted .mp4 (landscape, 10–20 seconds, under ~8 MB). Set `heroVideo: ""` in `config.js` to turn it off.
+Free fashion clips you're allowed to use: pexels.com/videos and pixabay.com/videos.
+
+**Size chart:** edit `size-chart.js` (body measurements in cm; inches are calculated automatically).
+
 ## Preview locally
 
 ```bash

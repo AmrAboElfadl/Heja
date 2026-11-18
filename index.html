@@ -77,7 +77,14 @@
   </header>
 
   <main>
-    <section class="hero">
+    <section class="hero" id="hero">
+      <div class="hero-bg" aria-hidden="true">
+        <video id="heroVideo" muted loop playsinline preload="none"></video>
+      </div>
+      <button class="video-toggle" id="videoToggle" hidden aria-pressed="false" data-i18n-aria="hero.pause" aria-label="Pause background video">
+        <svg class="i-pause" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+        <svg class="i-play" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      </button>
       <div class="container hero-inner">
         <div class="hero-text">
           <p class="eyebrow" data-i18n="hero.eyebrow">New season · 2026</p>
@@ -245,6 +252,7 @@
         <p id="pmDesc"></p>
         <div class="size-head"><p class="label" data-i18n="pm.size">Size</p><button class="link-btn" data-open="sizes" data-i18n="pm.sizeGuide">Size guide</button></div>
         <div class="sizes" id="pmSizes"></div>
+        <div class="fit-box" id="pmFit"></div>
         <div class="qty-row">
           <div class="qty">
             <button type="button" id="pmMinus" aria-label="−">−</button>
@@ -272,25 +280,32 @@
       <button class="close" data-close data-i18n-aria="close" aria-label="Close">×</button>
       <div class="modal-body">
         <h3 id="sgTitle" data-i18n="sg.title">Size guide</h3>
-        <p class="label" data-i18n="sg.adults">Adults (cm)</p>
-        <table class="size-table">
-          <thead><tr><th data-i18n="sg.size">Size</th><th data-i18n="sg.chest">Chest</th><th data-i18n="sg.waist">Waist</th><th data-i18n="sg.hips">Hips</th></tr></thead>
-          <tbody>
-            <tr><td>XS</td><td>80–84</td><td>62–66</td><td>86–90</td></tr>
-            <tr><td>S</td><td>86–90</td><td>68–72</td><td>92–96</td></tr>
-            <tr><td>M</td><td>92–96</td><td>74–78</td><td>98–102</td></tr>
-            <tr><td>L</td><td>98–104</td><td>80–86</td><td>104–108</td></tr>
-            <tr><td>XL</td><td>106–112</td><td>88–94</td><td>110–116</td></tr>
-          </tbody>
-        </table>
-        <p class="label" data-i18n="sg.kids">Kids</p>
-        <table class="size-table">
-          <thead><tr><th data-i18n="sg.size">Size</th><th data-i18n="sg.height">Height</th></tr></thead>
-          <tbody>
-            <tr><td>2Y</td><td>86–92</td></tr><tr><td>4Y</td><td>98–104</td></tr>
-            <tr><td>6Y</td><td>110–116</td></tr><tr><td>8Y</td><td>122–128</td></tr>
-          </tbody>
-        </table>
+        <div class="sg-controls">
+          <div class="seg" id="sgTabs" role="tablist"></div>
+          <div class="seg" id="sgUnits"></div>
+        </div>
+        <p class="small" id="sgIntro"></p>
+        <div class="table-scroll"><table class="size-table" id="sgTable"></table></div>
+        <p class="sg-extra" id="sgExtra" hidden></p>
+        <div class="how">
+          <p class="label" data-i18n="sg.how">How to measure</p>
+          <div class="how-inner">
+            <svg class="how-figure" viewBox="0 0 120 220" aria-hidden="true">
+              <circle cx="60" cy="22" r="14" fill="#e4ddd1"/>
+              <path d="M38 44 Q60 36 82 44 L92 110 L84 112 L78 70 L80 120 Q82 130 84 210 L66 210 L60 140 L54 210 L36 210 Q38 130 40 120 L42 70 L36 112 L28 110 Z" fill="#e4ddd1"/>
+              <g fill="none" stroke="#c86b4a" stroke-width="2.5" stroke-linecap="round">
+                <ellipse cx="60" cy="62" rx="24" ry="5"/><ellipse cx="60" cy="90" rx="19" ry="4.5"/><ellipse cx="60" cy="116" rx="23" ry="5"/>
+              </g>
+              <g font-size="11" font-weight="700" fill="#1f2a24" font-family="Inter, sans-serif"><text x="98" y="66">1</text><text x="98" y="94">2</text><text x="98" y="120">3</text></g>
+            </svg>
+            <ol class="how-list">
+              <li data-i18n="sg.how.bust"></li>
+              <li data-i18n="sg.how.waist"></li>
+              <li data-i18n="sg.how.hips"></li>
+              <li data-i18n="sg.how.height"></li>
+            </ol>
+          </div>
+        </div>
         <p class="small" data-i18n="sg.note"></p>
       </div>
     </div>
@@ -382,6 +397,7 @@
 
   <script src="config.js"></script>
   <script src="i18n.js"></script>
+  <script src="size-chart.js"></script>
   <script src="products.js"></script>
   <script src="app.js"></script>
 </body>

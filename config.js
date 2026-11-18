@@ -25,6 +25,11 @@ window.HEJA_CONFIG = {
   supabaseUrl: "https://ayzewnvgvvhoioljxhvj.supabase.co",
   supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5emV3bnZndnZob2lvbGp4aHZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ5MjQ5MzMsImV4cCI6MjExMDUwMDkzM30.W-CXqQoeD8S42NJlUxz7snUo65HE988XicmRDNRwku8",
 
+  // Homepage background video (muted, loops). Use an .mp4 under ~8 MB.
+  // Put the file in assets/ (or use a full https:// link). Set to "" to turn it off.
+  heroVideo: "assets/hero.mp4",
+  heroPoster: "assets/hero-poster.jpg",   // still image shown while the video loads
+
   // AI shopping assistant (runs on Vercel at /api/chat using OpenRouter).
   assistant: true,
 

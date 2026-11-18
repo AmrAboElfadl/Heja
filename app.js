@@ -38,6 +38,7 @@
       store.set("heja-lang", lang);
       renderAll();
       if (!$("#productOverlay").hidden && pm.id) openProduct(pm.id, { keepFocus: true });
+      if (!$("#sizesOverlay").hidden) renderSizeGuide();
     })
   );
 
@@ -290,6 +291,10 @@
     if (!o) return;
     e.preventDefault();
     if (!$("#menuOverlay").hidden) closeOverlay($("#menuOverlay"));
+    if (o.dataset.open === "sizes") {
+      if ($("#productOverlay").hidden) { sg.highlight = null; sg.unisex = false; }
+      renderSizeGuide();
+    }
     openOverlay($(`#${o.dataset.open}Overlay`));
   });
 
@@ -323,6 +328,7 @@
       .map((s) => `<button type="button" class="size ${s === pm.size ? "active" : ""}" data-size="${esc(s)}" aria-pressed="${s === pm.size}">${esc(s)}</button>`)
       .join("");
     renderPmFav();
+    renderFit();
     const related = [...PRODUCTS.filter((x) => x.id !== id && x.category === p.category), ...PRODUCTS.filter((x) => x.id !== id && x.category !== p.category)].slice(0, 4);
     $("#pmRelated").innerHTML = related.map(miniCard).join("");
     $("#productOverlay .modal").scrollTop = 0;
@@ -335,6 +341,7 @@
     if (!b) return;
     pm.size = b.dataset.size;
     $$(".size", $("#pmSizes")).forEach((x) => { x.classList.toggle("active", x === b); x.setAttribute("aria-pressed", x === b); });
+    renderFit();
   });
   $("#pmMinus").addEventListener("click", () => { pm.qty = Math.max(1, pm.qty - 1); $("#pmQty").textContent = pm.qty; });
   $("#pmPlus").addEventListener("click", () => { pm.qty = Math.min(20, pm.qty + 1); $("#pmQty").textContent = pm.qty; });
@@ -359,6 +366,109 @@
     if (location.hash === "#track") { history.replaceState(null, "", location.pathname); openOverlay($("#trackOverlay")); }
   }
   window.addEventListener("hashchange", openFromHash);
+
+  // ---------- international size chart ----------
+  const SIZES = window.HEJA_SIZES || {};
+  const sg = { chart: "women", unit: store.get("heja-unit", "cm"), highlight: null, unisex: false };
+  const chartFor = (p) =>
+    ({ Women: "women", Men: "men", Unisex: "men", Kids: "kids", Accessories: "accessories" })[p.category] ||
+    (p.sizes.some((s) => /^\d+Y$/.test(s)) ? "kids" : p.sizes.length === 1 ? "accessories" : "women");
+  const unitLabel = () => t(sg.unit === "in" ? "sg.in" : "sg.cm");
+  const range = ([a, b]) => (sg.unit === "in" ? `${(a / 2.54).toFixed(1)}–${(b / 2.54).toFixed(1)}` : `${a}–${b}`);
+
+  function renderSizeGuide() {
+    const tabs = [["women", "sg.women"], ["men", "sg.men"], ["kids", "sg.kids"], ["accessories", "sg.acc"]].filter(([k]) => SIZES[k]);
+    $("#sgTabs").innerHTML = tabs.map(([k, l]) =>
+      `<button type="button" role="tab" aria-selected="${k === sg.chart}" data-chart="${k}">${esc(t(l))}</button>`).join("");
+    $("#sgUnits").innerHTML = ["cm", "in"].map((u) =>
+      `<button type="button" aria-pressed="${u === sg.unit}" data-unit="${u}">${esc(t(u === "in" ? "sg.in" : "sg.cm"))}</button>`).join("");
+    const c = SIZES[sg.chart];
+    if (!c) return;
+    $("#sgIntro").textContent = t("sg.intro", { unit: unitLabel() });
+    const head = [t("sg.size"), ...c.cols.map((k) => t(`sg.${k}`)), ...c.body.map((k) => t(`sg.${k}`))];
+    $("#sgTable").innerHTML =
+      `<thead><tr>${head.map((h) => `<th>${esc(h)}</th>`).join("")}</tr></thead><tbody>` +
+      Object.entries(c.rows).map(([size, r]) =>
+        `<tr class="${size === sg.highlight ? "hl" : ""}"><th scope="row">${esc(size)}</th>${c.cols.map((k) => `<td>${esc(r[k])}</td>`).join("")}${c.body.map((k) => `<td>${range(r[k])}</td>`).join("")}</tr>`
+      ).join("") + "</tbody>";
+    const extra = sg.chart === "accessories"
+      ? t("sg.oneSize", { range: `${range(c.rows["One size"].head)} ${unitLabel()}` })
+      : sg.unisex && sg.chart === "men" ? t("sg.unisex") : "";
+    $("#sgExtra").textContent = extra;
+    $("#sgExtra").hidden = !extra;
+    const how = $$(".how-list li");
+    const kids = sg.chart === "kids";
+    how[1].hidden = how[2].hidden = kids;
+    how[3].hidden = !kids;
+    $(".how").hidden = sg.chart === "accessories";
+  }
+  $("#sgTabs").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-chart]");
+    if (b) { sg.chart = b.dataset.chart; renderSizeGuide(); }
+  });
+  $("#sgUnits").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-unit]");
+    if (!b) return;
+    sg.unit = b.dataset.unit; store.set("heja-unit", sg.unit);
+    renderSizeGuide(); if (pm.id) renderFit();
+  });
+
+  // "Your size M = EU 38 · UK 10 · US 6" under the size buttons
+  function renderFit() {
+    const p = byId(pm.id);
+    const key = chartFor(p);
+    const c = SIZES[key];
+    sg.chart = key; sg.highlight = pm.size; sg.unisex = p.category === "Unisex";
+    const box = $("#pmFit");
+    const link = `<button type="button" class="link-btn" data-open="sizes">${esc(t("pm.findSize"))}</button>`;
+    if (!c) { box.innerHTML = link; return; }
+    if (key === "accessories") {
+      box.innerHTML = `<span>${esc(t("sg.oneSize", { range: `${range(c.rows["One size"].head)} ${unitLabel()}` }))}</span>`;
+      return;
+    }
+    const r = pm.size && c.rows[pm.size];
+    if (!r) { box.innerHTML = link; return; }
+    const intl = c.cols.map((k) => `${t(`sg.${k}`)} ${r[k]}`).join(" · ");
+    const body = c.body.map((k) => `${t(`sg.${k}`)} ${range(r[k])}`).join(" · ");
+    box.innerHTML = `<strong>${esc(t("pm.yourSize", { size: pm.size }))}</strong>
+      <span class="fit-intl">${esc(intl)}</span>
+      <span class="fit-body">${esc(body)} ${esc(unitLabel())}</span>
+      ${sg.unisex ? `<span class="fit-note">${esc(t("sg.unisex"))}</span>` : ""}
+      ${link}`;
+  }
+
+  // ---------- background video ----------
+  function setupVideo() {
+    const v = $("#heroVideo"), hero = $("#hero"), btn = $("#videoToggle");
+    if (!CFG.heroVideo) return;
+    hero.classList.add("has-video");
+    if (CFG.heroPoster) v.poster = CFG.heroPoster;
+    v.src = CFG.heroVideo;
+    btn.hidden = false;
+    let userPaused = false;
+    const setBtn = (playing) => {
+      btn.classList.toggle("paused", !playing);
+      btn.setAttribute("aria-pressed", String(!playing));
+      btn.dataset.i18nAria = playing ? "hero.pause" : "hero.play";
+      btn.setAttribute("aria-label", t(btn.dataset.i18nAria));
+    };
+    v.addEventListener("play", () => setBtn(true));
+    v.addEventListener("pause", () => setBtn(false));
+    btn.addEventListener("click", () => {
+      if (v.paused) { userPaused = false; v.play().catch(() => {}); } else { userPaused = true; v.pause(); }
+    });
+    const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const saveData = navigator.connection && navigator.connection.saveData;
+    if (reduce || saveData) { userPaused = true; setBtn(false); v.preload = "metadata"; return; }
+    v.play().catch(() => setBtn(false));
+    // Pause while scrolled away to save battery and data
+    if ("IntersectionObserver" in window) {
+      new IntersectionObserver(([e]) => {
+        if (userPaused) return;
+        if (e.isIntersecting) v.play().catch(() => {}); else v.pause();
+      }).observe(hero);
+    }
+  }
 
   // ---------- recently viewed ----------
   let recent = store.get("heja-recent", []);
@@ -695,5 +805,6 @@
   }
   // Show the built-in catalog instantly, then refresh from the database.
   renderAll();
+  setupVideo();
   loadRemote().then(() => { renderAll(); refreshPromo(); openFromHash(); });
 })();
