@@ -78,7 +78,7 @@ Browser ──► Cloudflare (index.html, app.js …)
 2. Settings → Variables and Secrets (runtime):
    - `OPENROUTER_API_KEY` (type **Secret**): your OpenRouter key (required for the assistant)
    - `OPENROUTER_MODEL`: optional, defaults to `openrouter/free` (OpenRouter's free-models router)
-   - `SUPABASE_URL`, `SUPABASE_ANON_KEY`: the same values as in `config.js`, so the assistant knows the live catalogue and stock
+   - `SUPABASE_URL` and `SUPABASE_ANON_KEY` are already set in `wrangler.jsonc` (public values), so the assistant knows the live catalogue and stock
 3. Settings → Build → Build variables: `SITE_URL` = your site address (e.g. `https://heja.<name>.workers.dev`),
    used for Google and social-media previews.
 4. Every push to GitHub redeploys automatically.

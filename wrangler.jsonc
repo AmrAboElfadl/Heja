@@ -1,11 +1,16 @@
 // Cloudflare Workers settings for the Heja store.
-// Secrets and variables (OPENROUTER_API_KEY, SUPABASE_URL, SUPABASE_ANON_KEY) are set in the
-// Cloudflare dashboard, not here; "keep_vars" stops a deploy from removing them.
+// The Supabase values below are the public ones already used by the website (config.js).
+// The OpenRouter key is a Secret set in the Cloudflare dashboard, never here;
+// "keep_vars" stops a deploy from removing it.
 {
   "name": "heja",
   "main": "src/worker.js",
   "compatibility_date": "2025-09-01",
   "keep_vars": true,
+  "vars": {
+    "SUPABASE_URL": "https://ayzewnvgvvhoioljxhvj.supabase.co",
+    "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5emV3bnZndnZob2lvbGp4aHZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ5MjQ5MzMsImV4cCI6MjExMDUwMDkzM30.W-CXqQoeD8S42NJlUxz7snUo65HE988XicmRDNRwku8"
+  },
   "build": { "command": "sh build.sh" },
   "assets": {
     "directory": "./public",
