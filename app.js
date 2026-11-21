@@ -292,7 +292,17 @@
   const priceStep = () => (Math.max(0, ...PRODUCTS.map((p) => p.price)) > 500 ? 50 : 1);
   const maxPriceAll = () => Math.ceil(Math.max(0, ...PRODUCTS.map((p) => p.price)) / priceStep()) * priceStep();
 
+  // Hide menu links (categories, New in, Sale) that would open an empty list
+  function syncNavLinks() {
+    const has = { all: PRODUCTS.length > 0, new: PRODUCTS.some(isNew), sale: PRODUCTS.some(isSale), favs: true };
+    document.querySelectorAll("[data-go]").forEach((a) => {
+      const go = a.dataset.go;
+      a.hidden = !(go in has ? has[go] : PRODUCTS.some((p) => p.category === go));
+    });
+  }
+
   function renderFilters() {
+    syncNavLinks();
     const CAT_ORDER = ["Women", "Unisex", "Accessories", "Men", "Kids"];
     const rank = (c) => (CAT_ORDER.indexOf(c) + 1) || 99;
     const cats = [...new Set(PRODUCTS.map((p) => p.category))].sort((a, b) => rank(a) - rank(b));
